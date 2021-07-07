@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+<title>Tutorial: How to use my R Package mixVarClust - Data science and Econometrics</title>
+<meta property="og:title" content="Tutorial: How to use my R Package mixVarClust - Data science and Econometrics">
+
+
+  <link href='../../../../favicons.ico' rel='icon' type='image/x-icon'/>
+
+
+  
+
+
+
+
+
+
+
+
+<link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="../../../../css/fonts.css" media="all">
+<link rel="stylesheet" href="../../../../css/main.css" media="all">
+
+
+
+  </head>
+  
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P6FER778X2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P6FER778X2');
+</script>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  
+
+  <ul class="nav-links">
+    
+    <li><a href="../../../../">Home</a></li>
+    
+    <li><a href="../../../../about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">15 min read</span>
+    
+
+    <h1 class="article-title">Tutorial: How to use my R Package mixVarClust</h1>
+
+    
+    <span class="article-date">2020-12-01</span>
+    
+
+    <div class="article-content">
+      
+
+
+<div id="what-is-mixvarclust" class="section level2">
+<h2>What is <strong>mixVarClust</strong></h2>
+<p><code>mixVarClust</code> is a Model-Based Clustering package. There are 3 mixture models implemented in the package. The Gaussian mixture model, used for clustering univariate or multivariate continuous variables. The multinomial mixture model, used for clustering categorical variables. The Gaussian-multinomial mixture model, used to group mix features (Gaussian and multinomial).</p>
+<p>For the Gaussian mixture model, 3 parsimonious models are implemented, including, one for each family (general, diagonal, spherical) with free parameters. Only 1 model is implemented for the multinomial case.</p>
+<p><em>mixVarClust</em> is intentionally implemented relying only on <strong>R base</strong> packages, namely, stats, utils, and graphics. These packages come pre-installed with R. Therfore, to use <em>mixVarClust</em>, one do not need any other external dependencies. Most of the functions in the package are implemented utilizing the <code>lapply</code> family functions, for speed.</p>
+<p>First I show how to install the package, then I present its content. After that, I illustrate how to use mixVarClust, by comparing it to Rmixmod.</p>
+</div>
+<div id="how-to-install-mixvarclust" class="section level2">
+<h2>How to install <strong>mixVarClust</strong></h2>
+<p>The source code of <strong>mixVarClust</strong> is available on my github repository (<a href="https://github.com/sowb/mixVarClust" class="uri">https://github.com/sowb/mixVarClust</a>). To download and install the package run :</p>
+<pre class="r"><code># if you do not have the package &quot;devtools&quot; installed
+# uncomment the following line
+#install.packages(&quot;devtools&quot;) 
+# install mixVarClust
+devtools::install_github(&quot;https://github.com/sowb/mixVarClust&quot;)</code></pre>
+<p>To load the package and get help, run the following :</p>
+<pre class="r"><code>#load the package
+library(mixVarClust)
+#&gt; mixVarClust v 0.0.0.9000 
+#&gt; Author : @Sow Boubacar
+# functions present in the package
+help(package = mixVarClust)</code></pre>
+<p>mixVarClust has 8 functions, including 3 for the computation of the EM algorithm :</p>
+<ul>
+<li><em>groupMixData(D,…)</em> performs clustering on data-sets with mixed features.<br />
+</li>
+<li><em>groupGaussianData(D,…)</em> performs clustering on data-sets with only continuous features, using the Gaussian mixture model.<br />
+</li>
+<li><em>groupMultinomialData(D, …)</em> find clusters in a data-set with only categorical features, using the multinomial mixture model.</li>
+</ul>
+<p>3 functions to show the results:</p>
+<ul>
+<li><em>summaryResults (object)</em> gives a summary of the clustering results.<br />
+</li>
+<li><em>plotResults(mod, D)</em> plots the clustering results.</li>
+<li><em>addEllipse(means, varCov)</em> draws ellipses.</li>
+</ul>
+<p>2 functions to compute 2 criterias for the model selection :</p>
+<ul>
+<li><em>criterionBIC(loglik, …)</em> computes the BIC, more suitable for mixture models than AIC.</li>
+<li><em>criterionAIC(loglik, …) </em>computes the AIC.</li>
+</ul>
+<p>Get help for each function using the R <em>help()</em> function. For example, on Rstudio, run the code below on your console, the documentation will shows up on the Help pane :</p>
+<pre class="r"><code>help(groupGaussianData)</code></pre>
+</div>
+<div id="comparing-mixvarclust-to-rmixmod." class="section level2">
+<h2>Comparing <em>mixVarClust</em> to <em>Rmixmod</em>.</h2>
+<p><a href="http://www.mixmod.org/spip.php?article61" target="_blank">Rmixmod</a> is a well-known R package for mixture modelling. It performs clustering, and supervised classification, of mixture models. The computations are implemented in C++, which makes the package very fast. The package implements the likelihood maximization with EM, CEM and SEM algorithms. It implements also, 14 Gaussian mixture models, 5 Multinomial mixture models, 20 models for mixed data, and 8 specific models for High Dimension data.</p>
+<p>For more information for <code>Rmximod</code>, see the website of the authors : <a href="http://www.mixmod.org/" class="uri">http://www.mixmod.org/</a>.</p>
+<p>To install and load Rmixmod, run:</p>
+<pre class="r"><code># To install Rmixmod, uncomment the following line  
+#install.packages(&quot;Rmixmod&quot;)
+library(Rmixmod)
+#&gt; Loading required package: Rcpp
+#&gt; Rmixmod v. 2.1.5 / URI: www.mixmod.org</code></pre>
+<p>Next, I compare the clustering performed by using <code>mixVarClust</code> to <code>Rmixmod</code>. For each mixture model, I check if both packages find similar results and which one is the fastest, etc. Keep in mind that, the results shown here might vary, if one changes the value of the <code>set.seed</code>.</p>
+<div id="clustering-continous-data-with-the-gaussian-mixture-model" class="section level3">
+<h3>Clustering continous data with the Gaussian mixture model</h3>
+<p>For this comparison, let use the iris data-set, without the label variable <code>Species</code>. Then, let us find the clusters. I start with <code>mixVarClust</code>.</p>
+<pre class="r"><code># Load the dataset
+data(&quot;iris&quot;)
+# remove the output variable Species
+irisNoLabel &lt;- iris[-5]
+str(irisNoLabel)
+#&gt; &#39;data.frame&#39;:    150 obs. of  4 variables:
+#&gt;  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+#&gt;  $ Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
+#&gt;  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
+#&gt;  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...</code></pre>
+<ul>
+<li>The true proportions of the clusters are :</li>
+</ul>
+<pre class="r"><code>table(iris[5])/sum(table(iris[5]))
+#&gt; 
+#&gt;     setosa versicolor  virginica 
+#&gt;  0.3333333  0.3333333  0.3333333</code></pre>
+<div id="clustering-iris-with-rmixmod" class="section level4">
+<h4>Clustering <code>iris</code> with <code>Rmixmod</code></h4>
+<pre class="r"><code>set.seed(0)
+# clustering with Rmixmod
+# find the best family model automatically 
+#mod_iris &lt;-
+#  mixmodCluster(
+#    iris,
+#    nbCluster = 3,
+#    model = mixmodGaussianModel(family = &quot;spherical&quot;, free.proportions = TRUE)
+# )
+mixmod_iris &lt;- mixmodCluster(irisNoLabel, nbCluster = 3)
+summary(mixmod_iris)
+#&gt; **************************************************************
+#&gt; * Number of samples    =  150 
+#&gt; * Problem dimension    =  4 
+#&gt; **************************************************************
+#&gt; *       Number of cluster =  3 
+#&gt; *              Model Type =  Gaussian_pk_Lk_C 
+#&gt; *               Criterion =  BIC(605.3973)
+#&gt; *              Parameters =  list by cluster
+#&gt; *                  Cluster  1 : 
+#&gt;                          Proportion =  0.3333 
+#&gt;                               Means =  5.0060 3.4280 1.4620 0.2460 
+#&gt;                           Variances = |     0.1550     0.0640     0.0888     0.0239 |
+#&gt;                                       |     0.0640     0.0819     0.0305     0.0175 |
+#&gt;                                       |     0.0888     0.0305     0.1001     0.0249 |
+#&gt;                                       |     0.0239     0.0175     0.0249     0.0217 |
+#&gt; *                  Cluster  2 : 
+#&gt;                          Proportion =  0.3541 
+#&gt;                               Means =  6.5539 2.9741 5.5057 2.0033 
+#&gt;                           Variances = |     0.4058     0.1675     0.2325     0.0624 |
+#&gt;                                       |     0.1675     0.2143     0.0800     0.0458 |
+#&gt;                                       |     0.2325     0.0800     0.2619     0.0651 |
+#&gt;                                       |     0.0624     0.0458     0.0651     0.0568 |
+#&gt; *                  Cluster  3 : 
+#&gt;                          Proportion =  0.3125 
+#&gt;                               Means =  5.9313 2.7563 4.2264 1.3051 
+#&gt;                           Variances = |     0.2152     0.0889     0.1233     0.0331 |
+#&gt;                                       |     0.0889     0.1137     0.0424     0.0243 |
+#&gt;                                       |     0.1233     0.0424     0.1389     0.0345 |
+#&gt;                                       |     0.0331     0.0243     0.0345     0.0301 |
+#&gt; *          Log-likelihood =  -237.5604 
+#&gt; **************************************************************</code></pre>
+<p>The above clustering results show:</p>
+<ul>
+<li>The Gaussian model <code>Gaussian_pk_Lk_C</code> is chosen by default. But it is possible to choose another model:</li>
+</ul>
+<pre class="r"><code>options(width = 60)
+# all gaussian models in Rmixmod
+mixmodGaussianModel() </code></pre>
+<ul>
+<li>The BIC value for this model is 605.3974.</li>
+<li>The estimated parameters, the Proportions, the Means, and Variances are presented.</li>
+</ul>
+<p>The figure below shows the representation of the mixture model. Each cluster is represented by a different color (blue, red and green). The histogram shows the mixture according to each feature. The plots show the mixture in 2D, for each pair of features, the size of the ellipse indicate the variance of the cluster, its center indicates the mean of the cluster, its shape indicates the Gaussian model type used.</p>
+<pre class="r"><code>plot(mixmod_iris)
+#&gt; [1] 1
+#&gt; [1] 2
+#&gt; [1] 3
+#&gt; [1] 4</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="clustering-iris-with-mixvarclust" class="section level4">
+<h4>Clustering <code>iris</code> with <code>mixVarClust</code></h4>
+<pre class="r"><code>set.seed(10)
+library(mixVarClust)
+mvc_iris &lt;- groupGaussianData(irisNoLabel, 3, modelType = &quot;general&quot;)
+summaryResults(mvc_iris)
+#&gt; 
+#&gt; ==============================================================
+#&gt; Number of Observations =  150
+#&gt; Number of Variables =  4
+#&gt; Number of Clusters =  3
+#&gt; ==============================================================
+#&gt; Log-liklihood =  -189.5026
+#&gt; BIC criterion =  599.4731
+#&gt; AIC criterion =  467.0051
+#&gt; Gaussian Model = general
+#&gt; EM algorithm converged after =  165 iterations.
+#&gt; ==============================================================
+#&gt; CLUSTER  1 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.354
+#&gt; +++MEANS :
+#&gt;      Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; [1,]        6.232       2.955        5.104       1.876
+#&gt; 
+#&gt; +++VARIANCE-COV MAT :
+#&gt;               Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; Sepal.Length        0.275       0.069        0.221       0.126
+#&gt; Sepal.Width         0.069       0.065        0.064       0.052
+#&gt; Petal.Length        0.221       0.064        0.307       0.178
+#&gt; Petal.Width         0.126       0.052        0.178       0.155
+#&gt; 
+#&gt; CLUSTER  2 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.333
+#&gt; +++MEANS :
+#&gt;      Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; [1,]        5.006       3.428        1.462       0.246
+#&gt; 
+#&gt; +++VARIANCE-COV MAT :
+#&gt;               Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; Sepal.Length        0.122       0.097        0.016       0.010
+#&gt; Sepal.Width         0.097       0.140        0.011       0.009
+#&gt; Petal.Length        0.016       0.011        0.030       0.006
+#&gt; Petal.Width         0.010       0.009        0.006       0.011
+#&gt; 
+#&gt; CLUSTER  3 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.313
+#&gt; +++MEANS :
+#&gt;      Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; [1,]        6.295       2.778         4.68       1.449
+#&gt; 
+#&gt; +++VARIANCE-COV MAT :
+#&gt;               Sepal.Length Sepal.Width Petal.Length Petal.Width
+#&gt; Sepal.Length        0.615       0.186        0.724       0.225
+#&gt; Sepal.Width         0.186       0.144        0.191       0.070
+#&gt; Petal.Length        0.724       0.191        1.001       0.314
+#&gt; Petal.Width         0.225       0.070        0.314       0.109
+#&gt; 
+#&gt; ==============================================================
+#&gt; * Clusters = 2 2 2 2 2 2 2 2 2 2 2 .... 1 1 1 1 1 1 1 1 1 1 1
+#&gt; ==============================================================</code></pre>
+<p>The package mixVarClust finds similar results to Rmixmod:</p>
+<ul>
+<li>using a General family model.</li>
+<li>in a different order, both packages found the same proportions (0.312, 0.333, and 0.354).</li>
+<li>the means and variances, are similar but not exactly the same.</li>
+<li>EM algorithm in mixVarClust converged after <code>{r} mvc_iris$nb_iter</code> iterations.</li>
+</ul>
+<p>The visualization of the results with <code>mixVarClust</code> is done by the function <code>plotResults</code>. For datasets having more than 2 features, one can choose 2 variables to plot, or use a <code>for</code> loop to plot all pairs of variables.</p>
+<pre class="r"><code># plot 
+plotResults(mvc_iris, irisNoLabel, axis = c(1,4))</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="clustering-categorical-data-using-the-multinomial-mixture-model" class="section level3">
+<h3>Clustering Categorical data using the Multinomial mixture model</h3>
+<p>The data-set used here contains only categorical variables. The dataset comes with <code>Rmixmod</code>.</p>
+<pre class="r"><code>set.seed(2)
+library(Rmixmod)
+data(birds) # dataset from Rmixmod
+str(birds)
+#&gt; &#39;data.frame&#39;:    69 obs. of  5 variables:
+#&gt;  $ gender    : Factor w/ 2 levels &quot;male&quot;,&quot;female&quot;: 1 2 2 1 1 1 2 2 2 2 ...
+#&gt;  $ eyebrow   : Factor w/ 4 levels &quot;none&quot;,&quot;poor pronounced&quot;,..: 2 1 3 3 3 3 3 2 2 2 ...
+#&gt;  $ collar    : Factor w/ 5 levels &quot;none&quot;,&quot;dotted&quot;,..: 2 2 1 2 2 2 2 2 2 2 ...
+#&gt;  $ sub-caudal: Factor w/ 5 levels &quot;white&quot;,&quot;black&quot;,..: 1 2 1 1 1 1 1 1 1 1 ...
+#&gt;  $ border    : Factor w/ 3 levels &quot;none&quot;,&quot;few&quot;,&quot;many&quot;: 2 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<div id="clustering-categorical-variables-with-rmixmod" class="section level4">
+<h4>Clustering categorical variables with <em>Rmixmod</em></h4>
+<p>In this package, 5 multinomial models are implemented. Without specifying a model in <code>mixmodCluster</code>, it returns the model <code>Binary_pk_Ekjh</code>. To specify another model :</p>
+<pre class="r"><code>options(width = 100)
+# all Rmixmod models
+mixmodMultinomialModel() </code></pre>
+<p>Without specifying a model :</p>
+<pre class="r"><code>set.seed(2)
+mixmod_birds &lt;- mixmodCluster(birds, nbCluster=2)
+summary(mixmod_birds)
+#&gt; **************************************************************
+#&gt; * Number of samples    =  69 
+#&gt; * Problem dimension    =  5 
+#&gt; **************************************************************
+#&gt; *       Number of cluster =  2 
+#&gt; *              Model Type =  Binary_pk_Ekjh 
+#&gt; *               Criterion =  BIC(518.9160)
+#&gt; *              Parameters =  list by cluster
+#&gt; *                  Cluster  1 : 
+#&gt;                          Proportion =  0.6544 
+#&gt;                              Center =  1.0000 3.0000 1.0000 1.0000 1.0000 
+#&gt;                             Scatter = |     0.4937     0.4937 |
+#&gt;                                       |     0.0761     0.0063     0.1741     0.0917 |
+#&gt;                                       |     0.1521     0.1391     0.0043     0.0043     0.0043 |
+#&gt;                                       |     0.0390     0.0045     0.0043     0.0259     0.0043 |
+#&gt;                                       |     0.0577     0.0289     0.0289 |
+#&gt; *                  Cluster  2 : 
+#&gt;                          Proportion =  0.3456 
+#&gt;                              Center =  2.0000 2.0000 2.0000 2.0000 1.0000 
+#&gt;                             Scatter = |     0.4280     0.4280 |
+#&gt;                                       |     0.1203     0.1463     0.0153     0.0107 |
+#&gt;                                       |     0.0509     0.0751     0.0080     0.0080     0.0080 |
+#&gt;                                       |     0.3641     0.5495     0.1288     0.0485     0.0080 |
+#&gt;                                       |     0.1074     0.0940     0.0134 |
+#&gt; *          Log-likelihood =  -198.0635 
+#&gt; **************************************************************</code></pre>
+<ul>
+<li>Visualization of <code>Rmixmod</code> Results</li>
+</ul>
+<pre class="r"><code># Visualization with Rmixmod
+plot(mixmod_birds)
+#&gt; round digits : 6NULL
+#&gt; duplicated individuals : 46NULL</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="clustering-categorical-variables-with-mixvarclust" class="section level4">
+<h4>Clustering categorical variables with <em>mixVarClust</em></h4>
+<p><code>mixVarClust</code> contains only one multinomial model.</p>
+<pre class="r"><code>set.seed(914)
+mvc_birds &lt;- groupMultinomialData(birds, K=2)
+summaryResults(mvc_birds)
+#&gt; 
+#&gt; ==============================================================
+#&gt; Number of Observations =  69
+#&gt; Number of Variables =  5
+#&gt; Number of Clusters =  2
+#&gt; ==============================================================
+#&gt; Log-liklihood =  -194.8894
+#&gt; BIC criterion =  512.5678
+#&gt; AIC criterion =  447.7787
+#&gt; EM algorithm converged after =  20 iterations.
+#&gt; ==============================================================
+#&gt; CLUSTER  1 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.656
+#&gt; +++PROBABILITIES alpha : 
+#&gt;                 [,1]  [,2]  [,3]  [,4]  [,5] 
+#&gt; male            0.507     .     .     .     .
+#&gt; female          0.493     .     .     .     .
+#&gt; none                . 0.072 0.861     . 0.956
+#&gt; poor pronounced     .     0     .     .     .
+#&gt; pronounced          .  0.84     .     .     .
+#&gt; very pronounced     . 0.088     .     .     .
+#&gt; dotted              .     . 0.139     .     .
+#&gt; dashed              .     .     0     .     .
+#&gt; longdashed          .     .     0     .     .
+#&gt; continuous          .     .     0     .     .
+#&gt; white               .     .     . 0.978     .
+#&gt; black               .     .     .     0     .
+#&gt; black &amp; white       .     .     .     0     .
+#&gt; black &amp; WHITE       .     .     . 0.022     .
+#&gt; BLACK &amp; white       .     .     .     0     .
+#&gt; few                 .     .     .     . 0.022
+#&gt; many                .     .     .     . 0.022
+#&gt; 
+#&gt; CLUSTER  2 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.344
+#&gt; +++PROBABILITIES alpha : 
+#&gt;                 [,1]  [,2]  [,3]  [,4]  [,5] 
+#&gt; male            0.423     .     .     .     .
+#&gt; female          0.577     .     .     .     .
+#&gt; none                . 0.116 0.044     . 0.916
+#&gt; poor pronounced     . 0.884     .     .     .
+#&gt; pronounced          .     0     .     .     .
+#&gt; very pronounced     .     0     .     .     .
+#&gt; dotted              .     . 0.956     .     .
+#&gt; dashed              .     .     0     .     .
+#&gt; longdashed          .     .     0     .     .
+#&gt; continuous          .     .     0     .     .
+#&gt; white               .     .     . 0.368     .
+#&gt; black               .     .     . 0.463     .
+#&gt; black &amp; white       .     .     . 0.126     .
+#&gt; black &amp; WHITE       .     .     . 0.042     .
+#&gt; BLACK &amp; white       .     .     .     0     .
+#&gt; few                 .     .     .     . 0.084
+#&gt; many                .     .     .     .     0
+#&gt; 
+#&gt; ==============================================================
+#&gt; * Clusters = 2 2 1 1 1 1 1 2 2 2 2 .... 1 1 1 1 1 1 1 1 1 1 1
+#&gt; ==============================================================</code></pre>
+<ul>
+<li>Visualization or <code>mixVarClust</code> results</li>
+</ul>
+<pre class="r"><code># Visualization with mixVarClust
+plotResults(mvc_birds, birds)</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<ul>
+<li>Both packages find exactly the same proportions (0.34 and 0.65).</li>
+<li>34.4% of the observations make up one cluster, while 65.6% make up an other cluster.</li>
+<li>In <code>Rmixmod</code>, the results scatter values “corresponds to the probability of being different from the most frequent modality, in a special constrained case that all modalities have the same probability except this modal value.” (explained <a href="https://gforge.inria.fr/forum/message.php?msg_id=148389" target="_blank"> here</a>
+by M. Christophe Biernacki, the senior developper of MIXMOD).</li>
+<li>In the results above, the rows are the modalities and the columns are the variables. In <code>mixVarClust</code>, the multinomial paramaters computed are the probabilities of each modality, in each variable. For instance, in the Cluster 2, the probability of having the modality <code>male</code> in the first feature is 0.507, in <code>female</code> it is 0.577 The dot <code>.</code> means, the corresponding modality does not exist in the variable.</li>
+</ul>
+</div>
+</div>
+<div id="clustering-mix-features-with-gaussian-multinomial-mixture-model" class="section level3">
+<h3>Clustering mix features with Gaussian-Multinomial mixture model</h3>
+<p>Let use the dataset heterodata from <code>Rmixmod</code>. It has 2 continuous variables and 3 categorical variables.</p>
+<pre class="r"><code>library(Rmixmod)
+data(&quot;heterodata&quot;)
+str(heterodata)
+#&gt; &#39;data.frame&#39;:    200 obs. of  5 variables:
+#&gt;  $ V1: Factor w/ 2 levels &quot;1&quot;,&quot;2&quot;: 2 1 1 2 1 2 2 2 2 1 ...
+#&gt;  $ V2: Factor w/ 2 levels &quot;1&quot;,&quot;2&quot;: 2 2 2 2 2 2 2 2 1 2 ...
+#&gt;  $ V3: Factor w/ 2 levels &quot;1&quot;,&quot;2&quot;: 2 1 1 2 1 2 2 2 2 1 ...
+#&gt;  $ V4: num  -0.434 -1.543 -3.532 -0.584 -3.601 ...
+#&gt;  $ V5: num  0.587 -6.429 -6.86 0.572 -5.944 ...</code></pre>
+<pre class="r"><code>summary(heterodata)
+#&gt;  V1      V2      V3            V4               V5         
+#&gt;  1: 98   1: 20   1: 54   Min.   :-5.349   Min.   :-7.5278  
+#&gt;  2:102   2:180   2:146   1st Qu.:-3.162   1st Qu.:-6.5777  
+#&gt;                          Median :-2.230   Median :-0.4381  
+#&gt;                          Mean   :-1.976   Mean   :-2.6058  
+#&gt;                          3rd Qu.:-1.152   3rd Qu.: 1.1966  
+#&gt;                          Max.   : 3.420   Max.   : 3.6323</code></pre>
+<div id="clustering-heterodata-with-rmixmod" class="section level4">
+<h4>Clustering <code>heterodata</code> with Rmixmod :</h4>
+<pre class="r"><code>set.seed(3)
+mixmod_het &lt;- mixmodCluster(heterodata, 2)
+summary(mixmod_het)
+#&gt; **************************************************************
+#&gt; * Number of samples    =  200 
+#&gt; * Problem dimension    =  5 
+#&gt; **************************************************************
+#&gt; *       Number of cluster =  2 
+#&gt; *              Model Type =  Heterogeneous_pk_Ekjh_Lk_Bk 
+#&gt; *               Criterion =  BIC(1617.7609)
+#&gt; *              Parameters =  list by cluster
+#&gt; Gaussian Parameters
+#&gt; *                  Cluster  1 : 
+#&gt;                          Proportion =  0.5100 
+#&gt;                               Means =  -1.3335 1.2259 
+#&gt;                           Variances = |     3.3280     0.0000 |
+#&gt;                                       |     0.0000     0.6061 |
+#&gt; *                  Cluster  2 : 
+#&gt;                          Proportion =  0.4900 
+#&gt;                               Means =  -2.6450 -6.5940 
+#&gt;                           Variances = |     0.8524     0.0000 |
+#&gt;                                       |     0.0000     0.1245 |
+#&gt; Multinomial Parameters
+#&gt; *                  Cluster  1 : 
+#&gt;                          Proportion =  0.5100 
+#&gt;                              Center =  2.0000 2.0000 2.0000 
+#&gt;                             Scatter = |     0.0049     0.0049 |
+#&gt;                                       |     0.1893     0.1893 |
+#&gt;                                       |     0.0340     0.0340 |
+#&gt; *                  Cluster  2 : 
+#&gt;                          Proportion =  0.4900 
+#&gt;                              Center =  1.0000 2.0000 1.0000 
+#&gt;                             Scatter = |     0.0051     0.0051 |
+#&gt;                                       |     0.0152     0.0152 |
+#&gt;                                       |     0.4798     0.4798 |
+#&gt; *          Log-likelihood =  -769.1431 
+#&gt; **************************************************************</code></pre>
+<p>The visualization of Rmixmod results:<br />
+For heterogenous data, we must specify which part of the results to plot, qualitative or quantitative.</p>
+<pre class="r"><code>plot(mixmod_het, showOnly=&quot;quantitative&quot;)
+#&gt; [1] 4
+#&gt; [1] 5</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="clustering-heterodata-dataset-with-mixvarclust" class="section level4">
+<h4>Clustering <code>heterodata</code> dataset with <em>mixVarClust</em></h4>
+<p>Like Rmixmod, I use the diagonal family model for the continuous part of this Gaussian-multinomial model:</p>
+<pre class="r"><code>set.seed(3)
+library(mixVarClust)
+mvc_het &lt;- groupMixData(heterodata, 2, modelType = &quot;diagonal&quot;)
+summaryResults(mvc_het)
+#&gt; 
+#&gt; ==============================================================
+#&gt; Number of Observations =  200
+#&gt; Number of Variables =  5
+#&gt; Number of Clusters =  2
+#&gt; ==============================================================
+#&gt; Log-liklihood =  -768.0227
+#&gt; BIC criterion =  1652.608
+#&gt; AIC criterion =  1580.045
+#&gt; Gaussian Model = diagonal
+#&gt; EM algorithm converged after =  6 iterations.
+#&gt; ==============================================================
+#&gt; CLUSTER  1 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.49
+#&gt; +++MEANS :
+#&gt;          V4     V5
+#&gt; [1,] -2.645 -6.594
+#&gt; 
+#&gt; +++VARIANCE-COV MAT :
+#&gt;        [,1]  [,2]
+#&gt; [1,] 0.852 0.000
+#&gt; [2,] 0.000 0.124
+#&gt; 
+#&gt; +++PROBABILITIES alpha : 
+#&gt;   [,1] [,2] [,3]
+#&gt; 1    1 0.01 0.52
+#&gt; 2    0 0.99 0.48
+#&gt; 
+#&gt; CLUSTER  2 
+#&gt; ==============================================================
+#&gt; +++PROPORTIONS =  0.51
+#&gt; +++MEANS :
+#&gt;          V4    V5
+#&gt; [1,] -1.333 1.226
+#&gt; 
+#&gt; +++VARIANCE-COV MAT :
+#&gt;        [,1]  [,2]
+#&gt; [1,] 3.328 0.000
+#&gt; [2,] 0.000 0.606
+#&gt; 
+#&gt; +++PROBABILITIES alpha : 
+#&gt;   [,1]  [,2]  [,3] 
+#&gt; 1     0 0.186 0.029
+#&gt; 2     1 0.814 0.971
+#&gt; 
+#&gt; ==============================================================
+#&gt; * Clusters = 2 1 1 2 1 2 2 2 2 1 2 .... 1 1 2 1 1 1 1 1 2 1 2
+#&gt; ==============================================================</code></pre>
+<pre class="r"><code>plotResults(mvc_het, heterodata)</code></pre>
+<p><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /><img src="../../../../post/2020-12-01-how-to-use-mixVarClust_files/figure-html/unnamed-chunk-24-2.png" width="672" style="display: block; margin: auto;" />
+For this dataset also, both packages give comparable results :</p>
+<ul>
+<li>They find almost the same proportions.</li>
+<li>The gaussian parameters are the same, but the multinomial parameters are different.</li>
+<li>The model obtained by <code>Rmixmod</code> (1617.7609) is slightly better than <code>mixVarClust</code> (1652.608).</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="how-fast-mixvarclust-is-compared-to-rmixmod" class="section level2">
+<h2>How fast <em>mixVarClust</em> is compared to <em>Rmixmod</em></h2>
+<p>Let use the package <code>rbenchmark</code> to compare the speed of <code>mixVarClust</code> and <code>Rmixmod</code>.</p>
+<pre class="r"><code>library(&quot;rbenchmark&quot;)
+benchmark(
+  mixvarclust = groupGaussianData(
+    iris[-5],
+    3,
+    modelType = &quot;general&quot;,
+    randomInit = 10,
+    endIter = TRUE,
+    nbIter = 200
+  ),
+  rmixmod = mixmodCluster(iris[-5], 3, model = mixmodGaussianModel(
+    family = &quot;general&quot;, free.proportions = TRUE
+  ))
+)
+#&gt;          test replications elapsed relative user.self sys.self user.child
+#&gt; 1 mixvarclust          100  76.388   18.527    76.339    0.048          0
+#&gt; 2     rmixmod          100   4.123    1.000     4.123    0.000          0
+#&gt;   sys.child
+#&gt; 1         0
+#&gt; 2         0</code></pre>
+<ul>
+<li>Rmixmod is extremely faster than my package.</li>
+</ul>
+</div>
+<div id="conslusions" class="section level2">
+<h2>Conslusions</h2>
+<ul>
+<li>Overall my package <code>mixVarClust</code> performs well the clustering, almost like <code>Rmixmod</code>.</li>
+<li>But of course, slower than Rmixmod. The latter is implemented in C++.</li>
+<li>In addition, <code>Rmixmod</code> is a lot more richer, with almost 50 models.</li>
+</ul>
+</div>
+<div id="problems-encountered-with-mixvarclust" class="section level2">
+<h2>Problems encountered with <code>mixVarClust</code>:</h2>
+<ul>
+<li>In clustering continuous variables, this problem <code>Error in solve.default(s) : system is computationally singular: reciprocal condition number = 5.40801e-18</code>, might happen, but rarely. When it is the case, change the gaussian model type, or change the number of random initialisation of the algorithm.</li>
+</ul>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<ol style="list-style-type: decimal">
+<li>mixVarClust <a href ="https://sowb.github.io/2020/11/20/mixvarclust-statistical-documentation/" target="_blank"> Statistical Documentation</a></li>
+<li>Rmixmod <a href ="http://www.mixmod.org/spip.php?article61" target="_blank"> Statistical Documentation</a></li>
+</ol>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="../../../../index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="../../../../images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/c&#43;&#43;.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/python.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="../../../../js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'G-P6FER778X2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+  </body>
+</html>
+

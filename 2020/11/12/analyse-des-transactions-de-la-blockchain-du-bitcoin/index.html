@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+<title>Analyse des transactions de la blockchain du Bitcoin - Data science and Econometrics</title>
+<meta property="og:title" content="Analyse des transactions de la blockchain du Bitcoin - Data science and Econometrics">
+
+
+  <link href='../../../../favicons.ico' rel='icon' type='image/x-icon'/>
+
+
+  
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../../../../css/fonts.css" media="all">
+<link rel="stylesheet" href="../../../../css/main.css" media="all">
+
+
+
+  </head>
+  
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P6FER778X2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P6FER778X2');
+</script>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  
+
+  <ul class="nav-links">
+    
+    <li><a href="../../../../">Home</a></li>
+    
+    <li><a href="../../../../about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">25 min read</span>
+    
+
+    <h1 class="article-title">Analyse des transactions de la blockchain du Bitcoin</h1>
+
+    
+    <span class="article-date">2020-11-12</span>
+    
+
+    <div class="article-content">
+      
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title></title>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <p><em>Extrait rapport de stage, 08/2019.</em></p>
+<p>Dans cette partie, nous donnons des explications détaillées sur ce qui a été fait dans l’analyse des données.</p>
+<h2 id="outils-utilisés-pour-réaliser-cette-étude">Outils utilisés pour réaliser cette étude</h2>
+<p>Cette étude a été essentiellement réalisée grâce au serveur du laboratoire LIRIS, de Python et de Neo4j. Le serveur de LIRIS nous a fourni la puissance de calcul nécessaire pour la réalisation de notre analyse (64G de mémoire RAM et de 20 Processeurs). Pour accéder au serveur, à partir de mon ordinateur portable,<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> nous nous sommes servis de <em>PuTTY</em> et de <em>FileZilla</em>. PuTTY est un terminal virtuel sur lequel on peut exécuter des commandes Linux sur un serveur à partir de Windows. FileZilla facilite l’accès et la gestion de fichiers sur le serveur, par exemple, je pouvais aisément copier ou déplacer des fichiers entre le serveur et mon ordinateur personnel.</p>
+<p>Python nous a permis de traiter et d’analyser les transactions de la blockchain. Nous avons fait recours à ses librairies standards d’analyse de données, notamment <em>numpy</em>, <em>pandas</em>, <em>json</em>,..., pour ne pas tous les citer.</p>
+<p>Grâce à Neo4j, en association à Python, nous avons réussi à faire le groupement des adresses de chaque utilisateur, et la construction du graphe du réseau du Bitcoin. Neo4j est un gestionnaire de base de données de graphes. Il permet de stocker et de gérer d’énormes quantité de données.</p>
+<h2 id="description-des-données">Description des Données</h2>
+<p>Nous avons étudié des transactions de la blockchain allant du 03 janvier 2009 (jour de la première transaction) au 09 septembre 2016. Au total, nous avions à notre disposition, 152 673 373 transactions, stockées dans 200 fichiers, au format JSON. Le poids total de tous les fichiers était de 115 GB. Une ligne d’un fichier contenait une transaction. L’exemple de la figure <a href="#exemple-txdata" data-reference-type="ref" data-reference="exemple-txdata">[exemple-txdata]</a> correspond à une ligne d’un fichier.</p>
+<p>Les fichiers sont nommés de <em>part-00</em> à <em>part-199</em>. Nous avons trouvé des erreurs dans les fichiers <em>part-40</em> à <em>part-44</em>. Nous avons remarqué que la dernière ligne de chacun de ces fichiers était inachevée. Nous n’avons pas pu identifier les raisons de cette erreur, mais elle signifie que nous avons des transactions manquantes dans les fichiers concernés. On est certain d’avoir au minimum 5 transactions manquantes.</p>
+<h3 id="quelques-statistiques-sur-les-transactions" class="unnumbered unnumbered">Quelques statistiques sur les transactions</h3>
+<ul>
+<li><p><strong>Nombre d’adresses en entrée et en sortie de chaque transaction</strong>. Nous présentons un extrait de ce résultat dans le tableau <a href="#couples-counts" data-reference-type="ref" data-reference="couples-counts">[couples-counts]</a>. La colonne <em>couples</em> contient les couples (nombre d’adresse en entrée, nombre d’adresses sorties), <em>couts</em> contient le nombre de fois qu’ils apparaissent, et <em>%p</em> contient le pourcentage du nombre total de transactions. Nous présentons le top 10 des couples les plus fréquents. Nous avons trouvé que 50% des transactions ont 1 adresse en entrée et 2 en sorties, 16% 2 adresses entrées et 2 en sorties.</p>
+<table>
+<caption>Couples nombre d’adresses en entrée et en sortie. Top 10 des couples fréquents.<span label="couples-counts"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">couples</th>
+<th style="text-align: right;">counts</th>
+<th style="text-align: right;">%p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(1, 2)</td>
+<td style="text-align: right;">76123308</td>
+<td style="text-align: right;">50.534426</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(2, 2)</td>
+<td style="text-align: right;">24972576</td>
+<td style="text-align: right;">16.578034</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(1, 1)</td>
+<td style="text-align: right;">10803499</td>
+<td style="text-align: right;">7.171898</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(3, 2)</td>
+<td style="text-align: right;">6958355</td>
+<td style="text-align: right;">4.619301</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(4, 2)</td>
+<td style="text-align: right;">4170316</td>
+<td style="text-align: right;">2.768463</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(1, 3)</td>
+<td style="text-align: right;">4069532</td>
+<td style="text-align: right;">2.701557</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(2, 1)</td>
+<td style="text-align: right;">3230527</td>
+<td style="text-align: right;">2.144584</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(5, 2)</td>
+<td style="text-align: right;">1942319</td>
+<td style="text-align: right;">1.289408</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">(2, 3)</td>
+<td style="text-align: right;">1623128</td>
+<td style="text-align: right;">1.077513</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(6, 2)</td>
+<td style="text-align: right;">1243521</td>
+<td style="text-align: right;">0.825511</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Statistiques des adresses</strong>. Sur la période de notre étude, nous avons trouvé que le nombre total d’adresses uniques dans la blockchain était de 171 484 006. Dans les tableaux <a href="#freq-adds-outs" data-reference-type="ref" data-reference="freq-adds-outs">[freq-adds-outs]</a> et <a href="#freq-adds-ins" data-reference-type="ref" data-reference="freq-adds-ins">[freq-adds-ins]</a>, nous présentons respectivement, le top 10, des adresses les plus utilisées en entrée et en sortie des transactions. La colonne <em>addresses_ids</em> contient un identifiant unique arbitraire que nous avons attribué à chaque adresse, la colonne <em>name</em> contient l’adresse publique en question. La colonne <em>counts</em> contient le nombre de fois qu’une adresse a été utilisée dans la blockchain.</p>
+<table>
+<caption>Les adresses les plus fréquentes en <em>sortie</em> des transactions<span label="freq-adds-outs"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">addresses_ids</th>
+<th style="text-align: left;">name</th>
+<th style="text-align: right;">counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">147182193</td>
+<td style="text-align: left;">1NxaBCFQwejSZbQfWcYNwgqML5wWoE3rK4</td>
+<td style="text-align: right;">1853678</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40532287</td>
+<td style="text-align: left;">1dice8EMZmqKvrGE4Qc9bUFf9PX3xaYDp</td>
+<td style="text-align: right;">1596535</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">154453850</td>
+<td style="text-align: left;">1LuckyR1fFHEsXYyx5QK4UFzv3PEAepPMK</td>
+<td style="text-align: right;">1138721</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">157094167</td>
+<td style="text-align: left;">1dice97ECuByXAvqXpaYzSaQuPVvrtmz6</td>
+<td style="text-align: right;">1101320</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">56059225</td>
+<td style="text-align: left;">1VayNert3x1KzbpzMGt2qdqrAThiRovi8</td>
+<td style="text-align: right;">782378</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">170331201</td>
+<td style="text-align: left;">1dice9wcMu5hLF4g81u8nioL5mmSHTApw</td>
+<td style="text-align: right;">593252</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3515159</td>
+<td style="text-align: left;">1dice7fUkz5h4z2wPc1wLMPWgB5mDwKDx</td>
+<td style="text-align: right;">436171</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">138134635</td>
+<td style="text-align: left;">1MPxhNkSzeTNTHSZAibMaS8HS1esmUL1ne</td>
+<td style="text-align: right;">405098</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">69900983</td>
+<td style="text-align: left;">1dice7W2AicHosf5EL3GFDUVga7TgtPFn</td>
+<td style="text-align: right;">393468</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">168876290</td>
+<td style="text-align: left;">3HNSiAq7wFDaPsYDcUxNSRMD78qVcYKicw</td>
+<td style="text-align: right;">364310</td>
+</tr>
+</tbody>
+</table>
+<p>On observe que ce sont les mêmes adresses qui apparaissent majoritairement en entrée et en sortie, avec un nombre de fois similaire. L’adresse qui a le nom &lt;&lt;0&gt;&gt; (id : 23357234) dans le tableau <a href="#freq-adds-ins" data-reference-type="ref" data-reference="freq-adds-ins">[freq-adds-ins]</a> est l’adresse en entrée de toutes les transactions de rémunération du minage si la rémunération est une génération de nouveaux bitcoins (et non des frais de transactions). Tous les mineurs qui sont payés par le protocole du Bitcoin, reçoivent des bitcoins venant de l’adresse 0. Elle apparaît dans 423348 transactions, ce résultat signifie que nous avons eu 423348 minages entre 2009 et 2016. C’est aussi le nombre de fois qu’il y a eu de création monétaire dans la blockchain durant cette période.</p>
+<table>
+<caption>Les adresses les plus fréquentes en <em>entrée</em> des transactions<span label="freq-adds-ins"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">addresses_ids</th>
+<th style="text-align: left;">name</th>
+<th style="text-align: right;">counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">147182193</td>
+<td style="text-align: left;">1NxaBCFQwejSZbQfWcYNwgqML5wWoE3rK4</td>
+<td style="text-align: right;">1852778</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40532287</td>
+<td style="text-align: left;">1dice8EMZmqKvrGE4Qc9bUFf9PX3xaYDp</td>
+<td style="text-align: right;">1595655</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">154453850</td>
+<td style="text-align: left;">1LuckyR1fFHEsXYyx5QK4UFzv3PEAepPMK</td>
+<td style="text-align: right;">1136530</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">157094167</td>
+<td style="text-align: left;">1dice97ECuByXAvqXpaYzSaQuPVvrtmz6</td>
+<td style="text-align: right;">1100444</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">56059225</td>
+<td style="text-align: left;">1VayNert3x1KzbpzMGt2qdqrAThiRovi8</td>
+<td style="text-align: right;">781771</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">170331201</td>
+<td style="text-align: left;">1dice9wcMu5hLF4g81u8nioL5mmSHTApw</td>
+<td style="text-align: right;">592591</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3515159</td>
+<td style="text-align: left;">1dice7fUkz5h4z2wPc1wLMPWgB5mDwKDx</td>
+<td style="text-align: right;">435419</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">23357234</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: right;">423348</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">69900983</td>
+<td style="text-align: left;">1dice7W2AicHosf5EL3GFDUVga7TgtPFn</td>
+<td style="text-align: right;">392892</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">168876290</td>
+<td style="text-align: left;">3HNSiAq7wFDaPsYDcUxNSRMD78qVcYKicw</td>
+<td style="text-align: right;">364311</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+<h2 id="groupement-ou-clustering-des-adresses-bitcoins">Groupement ou &lt;&lt;clustering&gt;&gt; des adresses bitcoins </h2>
+<p>Dans cette partie nous expliquons comment nous avons pu gérer 115 GB de données avec les outils qui étaient à notre disposition, puis nous expliquons comment nous avons implémenté les heuristiques, avant de présenter les résultats obtenus.</p>
+<p>Le problème le plus important que nous avons rencontré dans l’analyse des transactions, est leur taille (ou leur poids). Il est impossible de charger 115 GB de données dans une machine de 64 GB de RAM en une seule fois. Nous avons donc analysé les données &lt;&lt;ligne par ligne&gt;&gt;. Concrètement, dans chaque fichier, on charge en mémoire RAM une transaction à la fois, puis on extrait les informations dont nous avons besoin. Ensuite, on stocke ces informations dans un des <em>built-ins</em> de Python le mieux adapté, soit dans un <em>tuple</em>, un dictionnaire (dict), une liste (list) ou un ensemble(set). Et nous travaillons sur ces données extraites. Pour le reste de la présentation, on gardera à l’esprit que lorsque l’on parle de liste, on fait allusion a une liste de Python.</p>
+<p>Dans un premier temps, nous utilisons deux critères de groupement, les heuristiques (<strong>h1</strong> et <strong>h2</strong>) présentées plus haut.</p>
+<h3 id="implémentation-de-lheuristique-1" class="unnumbered unnumbered">Implémentation de l’heuristique 1</h3>
+<p>Rappelons que l’heuristique 1 dit que toutes les adresses publiques en entrée d’une transaction appartiennent au même utilisateur <strong>X</strong>, parce que ce dernier contrôle la clé privée qui permet d’ accéder à ces adresses. Par conséquent, si l’une de (ou toutes) ces adresses apparaît encore dans d’autres transactions, on déduit que, toutes les adresses en entrée de ces transactions, appartiennent aussi au même utilisateur <strong>X</strong> . Théoriquement, l’application de heuristique 1 peut se faire en 3 étapes :</p>
+<ol>
+<li><p>Nous mettons toutes les adresses en entrée d’une transaction dans une liste. Donc au total, nous obtenons un nombre de liste qui est égale au nombre de transactions de la blockchain.</p></li>
+<li><p>Nous vérifions si une <em>intersection</em> existe entre deux ou plusieurs listes. Si c’est le cas, on regroupe les adresses contenues par ces listes dans une seule liste.</p></li>
+<li><p>On répète l’étape 2 jusqu’à ce qu’il n’existe plus d’intersection entre les listes d’adresses restantes.</p></li>
+</ol>
+<p>L’exemple suivant explique concrètement cela.</p>
+
+<p><strong>Exemple .</strong> <em>Considérons l’illustration de la figure <a href="#exemple-clustering" data-reference-type="ref" data-reference="exemple-clustering">[exemple-clustering]</a>. Pour simplifier, notons les adresses bitcoins dans la blockchain par <span class="math inline">@1</span>, ...,<span class="math inline">@666</span>. Et une transaction par <code>Tx</code>. (1) Nous collectons les adresses en entrée dans les transactions Tx 5, Tx 109, Tx 314, et les mettons dans 3 différentes listes. On obtient: <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>1</sub> = [@1, @13]</span>, <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>2</sub> = [@33, @11, @78]</span> et <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>3</sub> = [@1, @33]</span>. (2) Ensuite, nous cherchons les intersections entre ces listes. On observe qu’il existe une intersection entre les listes 2 et 3. Donc, d’après h1, les adresses de l’union de ces deux listes, soit la <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>23</sub> = [@1, @33, @11, @78]</span>, appartient au même utilisateur. (3) On remarque aussi qu’il existe une intersection entre la <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>1</sub></span> et <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>23</sub></span>, donc les adresses de l’union entre les deux listes, soit <span class="math inline"><em>l</em><em>i</em><em>s</em><em>t</em><em>e</em><sub>123</sub> = [@1, @33, @11, @78, @13]</span> appartient au même utilisateur. Au final, on trouve que toutes les adresses en entrée de ces trois transactions appartiennent au même utilisateur.</em></p>
+
+<figure>
+<img src="../../../../images/exemple-clustering.png" alt="Identification des adresses d’un même utilisateur" id="exemple-clustering" /><figcaption>Identification des adresses d’un même utilisateur<span label="exemple-clustering"></span></figcaption>
+</figure>
+
+<h3 id="implémentation-de-lheuristique-2" class="unnumbered unnumbered">Implémentation de l’heuristique 2</h3>
+<p>Nous avons appliqué l’heuristique 2 comme nous l’avons fait pour h1, pour toutes les transactions de la blockchain. Nous illustrons avec la figure <a href="#exemple-clustering" data-reference-type="ref" data-reference="exemple-clustering">[exemple-clustering]</a>, supposons que la transaction Tx 5 respecte les critères de l’heuristique 2, c’est à dire, que l’adresse 666 est l’adresse d’appoint; et la valeur de bitcoins envoyée à <code>@666</code> a 4 décimales de plus que celle envoyée à <code>@99</code>. Dans ce cas, nous collectons une adresse en entrée de la transaction et l’adresse d’appoint, nous les mettons dans une liste, soit <span class="math inline">[1, 666]</span>. Nous rajoutons toutes les listes obtenues de cette manière aux celles obtenues par l’heuristique 1, puis nous réalisons les étapes 2 et 3.</p>
+<p>L’intérêt d’appliquer l’heuristique 2 est de pouvoir classer quelques adresses qui n’ont pas pu être classées par l’heuristique 1, particulièrement les adresses en sorties qui n’apparaissent pas en entrées des transactions, et de lier des groupes qui n’ont pas pu être liés.</p>
+<h3 id="dict-adds" class="unnumbered unnumbered">Reduction du poids des données, <em>dictionnaire des adresses</em></h3>
+<p>La liste de listes résultante de la collection d’adresses avec uniquement <strong>h1</strong> faisait un poids de 15 G, nommons <span class="math inline"><em>L</em><em>L</em><sub>chr</sub></span> cette liste. Cette dernière contient des adresses au format chaînes de caractères, par exemple, <code>1R4X13ffkTzXPbqsBXNipnqgwaQYWKjkd</code>. Pour réduire le poids de <span class="math inline"><em>L</em><em>L</em><sub>chr</sub></span>, nous avons attribué à chaque adresse un entier naturel (un <code>int</code> de Python).</p>
+<p>Concrètement, nous avons d’abord construit un dictionnaire (<code>dict</code>) qui contient toutes les adresses uniques de la blockchain, de sorte que chacune d’elle soit associée à un entier naturel unique. La <em>clé</em> du dictionnaire était l’adresse en chaîne de caractère, sa <em>valeur</em> le l’entier naturel. Par exemple, nous considérons que l’adresse suivante correspond à 1, <br /><span class="math display"><code>1R4X13ffkTzXPbqsBXNipnqgwaQYWKjkd</code> → 1.</span><br /></p>
+<p>Un extrait du <em>dictionnaires des adresses</em> est présenté sur la figure <a href="#exemple-dictionnaire" data-reference-type="ref" data-reference="exemple-dictionnaire">[exemple-dictionnaire]</a>. Nous voyons d’un côté des adresses bitcoin et de l’autre les valeurs numériques correspondantes.</p>
+
+<figure>
+<img src="../../../../images/exemple-dictionnaire.PNG" alt="Extrait du dictionnaire des adresses" id="exemple-dictionnaire" /><figcaption>Extrait du dictionnaire des adresses<span label="exemple-dictionnaire"></span></figcaption>
+</figure>
+<p>Ensuite, nous avons utilisé ce dictionnaire pour convertir <span class="math inline"><em>L</em><em>L</em><sub><em>c</em><em>h</em><em>r</em></sub></span>. Après conversion, on obtenait une liste, que nous nommons <span class="math inline"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub></span>, qui ne contient que des nombres : <br /><span class="math display"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub> = [[1, 33], [33, 49999, 78], ..., [255, ..., 171484006]]</span><br /></p>
+<p><span class="math inline"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub></span> faisait environ 4G sur le disque dur. Elle est plus facile à manipuler par rapport à <span class="math inline"><em>L</em><em>L</em><sub><em>c</em><em>h</em><em>a</em><em>r</em></sub></span>. Par conséquent, pour la suite de notre travail, on s’est servi uniquement de <span class="math inline"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub></span>.</p>
+<h3 id="trouver-les-intersections-des-listes-et-les-unifier" class="unnumbered unnumbered">Trouver les intersections des listes et les unifier</h3>
+<p>Nous nous sommes servis de Neo4j et de la théorie des graphes pour grouper les adresses. L’idée a été de construire un graphe à partir des adresses publics collectées par les heuristiques <strong>h1</strong> et <strong>h2</strong>. Nous appelons ce graphe, le <em>Graphe du Clustering (GC)</em>. En utilisant <span class="math inline"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub></span>, nous formons :</p>
+<dl>
+<dt>Les nœuds du GC</dt>
+<dd><p>sont toutes les adresses bitcoin en entrée de chaque transaction. A titre d’exemple, dans liste présentée en <a href="#lln" data-reference-type="ref" data-reference="lln">[lln]</a>, 1 est un nœud, 33 est un nœud. Nous faisons de même pour toutes les valeurs dans chaque liste.</p>
+</dd>
+<dt>Les liens du GC.</dt>
+<dd><p>Nous avons crée des liens entre toutes les adresses d’une même liste. En d’autres termes, nous créons des liens entre toutes les adresses en entrée d’une même transaction de la manière suivante, nous lions la première adresse aux restes des adresses de la liste. Ainsi, nous formons un graphe centralisé (ou polaire) pour chaque transaction, soit 152 M de sous graphes au total.</p>
+</dd>
+</dl>
+<p>Ensuite, nous trouvons les composantes connexes de GC grâce à l’algorithme <em>UnionFind</em>. Ce dernier permet de trouver toutes les partitions du graphe.</p>
+
+<p><strong>Exemple .</strong> <em><span id="ex" label="ex">[ex]</span> Considérons <span class="math inline"><em>L</em><em>L</em><sub><em>i</em><em>n</em><em>t</em></sub></span> (éq. <a href="#lln" data-reference-type="ref" data-reference="lln">[lln]</a> ), nous faisons un chemin entre l’adresse 1 et 33 de la liste 1, puis 3 chemins entre 33 et le reste des éléments de la liste 2. Ensuite, l’application de l’algorithme UnionFind connecte tous les nœuds qui sont liés. La partition résultante est le groupement d’adresses recherché. C'est ce que décrit aussi la figure <a href="#exemple-clustering2" data-reference-type="ref" data-reference="exemple-clustering2"></a> </em></p>
+
+<figure>
+<img src="../../../../images/exemple-clustering2.png" alt="Clustering par l’heuristique 1 en utilisant la théorie des graphes" id="exemple-clustering2" /><figcaption>Clustering par l’heuristique 1 en utilisant la théorie des graphes<span label="exemple-clustering2"></span></figcaption>
+</figure>
+<p>La figure <a href="#exemple-clustering3" data-reference-type="ref" data-reference="exemple-clustering3">[exemple-clustering3</a> montre un extrait du résultat obtenu par Neo4j, on y observe 4 composantes connexes. Chaque composante est un groupe (ou cluster) d’adresses qui appartiennent au même utilisateur, d’après les heuristiques 1 et 2. La légende de la figure indique les propriétés du nœud 2097156 (automatiquement données par Neo4j). On voit que l’adresse qui correspond à ce noeud (et toutes ses connexions) appartiennent à la partition 1029212.</p>
+
+<figure id="multifig">
+  <figure class=subfigure >
+  <img src="../../../../images/exemple-algounionfind.PNG" /><figcaption class=subfigcaption></figcaption>
+  </figure>
+  <figure class=subfigure>
+  <img src="../../../../images/desc-adresse1.PNG" /><figcaption class=subfigcaption> </figcaption>
+  </figure>
+  <figcaption>Extrait des composantes connexes (Graphe du Clustering) <span label="exemple-clustering3"></span> </figcaption>
+</figure>
+
+
+<h3 id="graphe-du-clustering" class="unnumbered unnumbered">Graphe du Clustering</h3>
+<p>Le graphe obtenu ainsi avait 119 612 744 de nœuds et 125 919 589 de liens. Ce graphe est une base de données, dans laquelle on peut extraire de nombreuses informations.</p>
+<h3 id="description-des-groupes-dadresses">Description des groupes d’adresses</h3>
+<p>Un cluster d’adresses est un ensemble d’adresses bitcoin appartenant à un même acteur. Dans un premier temps, nous avons effectué le groupement d’adresses en appliquant uniquement l’heuristique 1 (<em>h1</em>). Dans un second temps, nous avons effectué un groupement en combinant les deux heuristiques (<em>h1-h2</em>). Nous présentons une comparaison des résultats obtenus dans le tableau <a href="#stats-clusters" data-reference-type="ref" data-reference="stats-clusters">[stats-clusters]</a>. Les colonnes <em>Taille des clusters</em> indiquent le nombre d’adresses dans un cluster, <em>h1</em> et <em>h1 et h2</em> indiquent respectivement le nombre de groupes obtenus avec l’application de h1 uniquement, et l’application de h1 et h2. On voit que:</p>
+<ul>
+<li><p>Nous avons trouvé 74 264 935 clusters, ou acteurs, en appliquant uniquement <em>h1</em>, 55 951 492 en appliquant <em>h1 et h2</em>.</p></li>
+<li><p>Avec h1, nous avons trouvé que le nombre total d’acteurs ayant au minimum deux adresses est 22 393 672. Avec h1 et h2, ce nombre baisse à 18 389 763.</p></li>
+<li><p>Avec <em>h1 et h2</em>, nous avons trouvé 30M de groupes de taille 1, contenant une adresse qui n’apparaissait seulement qu’en entrée de transaction, contre 44M avec h1. Le rajout de h2 a donc permis le classement dans des groupes, environ 14M d’adresses en entrée de transactions.</p></li>
+<li><p>Nous avons trouvé 7.6M de clusters de taille 1 avec <em>h1</em>, dont l’adresse est en sortie de transaction, et environ 6,5M clusters avec <em>h1 et h2</em>. Ce résultat indique que, le rajout de l’heuristique 2, a permis de trouver un groupe à 853 681 nouvelles adresses de sortie (c’est la différence de 7679445-6825764).</p></li>
+</ul>
+
+<table>
+<caption>Statistiques des Clusters.<span label="stats-clusters"></span></caption>
+<thead>
+  <tr class="header">
+  <th style="text-align: left;"><span>Taille des clusters</span></th>
+  <th style="text-align: right;">h1</th>
+  <th style="text-align: right;">h1 and h2</th>
+  </tr>
+  </thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"> &gt;  = 2</span> adresses</td>
+<td style="text-align: right;">22 393 672</td>
+<td style="text-align: right;">18 389 763</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"> = 1</span> (ads. en Entrée)</td>
+<td style="text-align: right;">44 191 818</td>
+<td style="text-align: right;">30 735 965</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"> = 1</span> (ads. Sortie)</td>
+<td style="text-align: right;">7 679 445</td>
+<td style="text-align: right;">6 825 764</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Nombre total de clusters</td>
+<td style="text-align: right;">74 264 935</td>
+<td style="text-align: right;">55 951 492</td>
+</tr>
+</tbody>
+</table>
+<p>Dans la table <a href="#clusters-adresses" data-reference-type="ref" data-reference="clusters-adresses">[clusters-adresses]</a>, nous présentons les 10 plus gros clusters et nous comparons le groupement par <em>h1</em> et <em>h1-h2</em>. Dans la colonne <em>Cluster_ID</em> figure le numéro du groupe d’adresses, <em>nb. d’adresses</em> contient la taille du cluster ou nombre d’adresses que le cluster contient, <em>% du Tot. d’adresses</em> indique le pourcentage d’adresses détenu par le cluster. C’est le rapport entre le nombre d’adresses d’un groupe et le nombre total d’adresses uniques dans la blockchain . Nous observons les résultats suivants :</p>
+<ul>
+<li><p>Le plus gros cluster obtenu par l’heuristique 1 (le cluster 1) détient 11 421 397 d’adresses bitcoins, soit 6.66 % de toutes les adresses qui existent dans la blockchain du Bitcoin, celui obtenu par h1-h2 détient 56 225 527 adresses, 32.78% des adresses. Les deux acteurs qui suivent, détiennent respectivement 2 095 653 et 69 845 de adresses bitcoins, ainsi de suite.</p></li>
+<li><p>Nous remarquons que, l’ajout de l’heuristique 2 dans le groupement, nous donne un super cluster qui contient environ le tiers de toutes les adresses de la blockchain. Ce résultat nous interroge sur l’intérêt d’utiliser h2. L’effet attendu par l’utilisation de h2 semble être exacerbé. Il est peu probable qu’une seule entité (ou un seul utilisateur) détienne autant d’adresses.</p></li>
+<li><p>On voit que les 6 premiers groupes obtenus avec <em>h1</em>, sont rassemblés quand on applique aussi <em>h2</em>.</p></li>
+</ul>
+
+<table>
+<caption>Fréquence du nombre d’adresses dans chaque cluster (top 10). Comparaison des heuristiques (h1 et h2). Période 2009-2016.<span label="clusters-adresses"></span></caption>
+<thead>
+  <tr>
+    <th class="tg-0lax"></th>
+    <th class="tg-0lax" colspan="2">h1</th>
+    <th class="tg-0lax" colspan="2">h1 and h2</th>
+  </tr>
+</thead>
+<tbody>
+<tr class="even">
+<td style="text-align: right;"> Cluster_ID</td>
+<td style="text-align: right;">nb. d’adresses</td>
+<td style="text-align: right;">% du Tot. d’adresses</td>
+<td style="text-align: right;">nb. d’adresses</td>
+<td style="text-align: right;">% du Tot. d’adresses</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"> 1</td>
+<td style="text-align: right;">11421397</td>
+<td style="text-align: right;">6.66</td>
+<td style="text-align: right;">56225527</td>
+<td style="text-align: right;">32.788</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2095653</td>
+<td style="text-align: right;">1.222</td>
+<td style="text-align: right;">69845</td>
+<td style="text-align: right;">0.041</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2005880</td>
+<td style="text-align: right;">1.17</td>
+<td style="text-align: right;">52710</td>
+<td style="text-align: right;">0.031</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">849725</td>
+<td style="text-align: right;">0.496</td>
+<td style="text-align: right;">49462</td>
+<td style="text-align: right;">0.029</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">825954</td>
+<td style="text-align: right;">0.482</td>
+<td style="text-align: right;">45793</td>
+<td style="text-align: right;">0.027</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">585058</td>
+<td style="text-align: right;">0.341</td>
+<td style="text-align: right;">45647</td>
+<td style="text-align: right;">0.027</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">578719</td>
+<td style="text-align: right;">0.337</td>
+<td style="text-align: right;">42411</td>
+<td style="text-align: right;">0.025</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">489411</td>
+<td style="text-align: right;">0.285</td>
+<td style="text-align: right;">40221</td>
+<td style="text-align: right;">0.023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">475985</td>
+<td style="text-align: right;">0.278</td>
+<td style="text-align: right;">39558</td>
+<td style="text-align: right;">0.023</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">473446</td>
+<td style="text-align: right;">0.276</td>
+<td style="text-align: right;">36084</td>
+<td style="text-align: right;">0.021</td>
+</tr>
+</tbody>
+</table>
+<p>Dans le tableau <a href="#clusters-freq" data-reference-type="ref" data-reference="clusters-freq">[clusters-freq]</a> nous présentons le type de cluster le plus fréquent parmi les clusters. La colonne <em>cluster size</em> contient le nombre d’adresses que détient le cluster. La colonne <em>counts</em> montre le nombre de groupes d’une telle taille. On observe que:</p>
+<ul>
+<li><p>Les groupes avec une seule adresse sont les plus nombreux. Nous avons obtenu 53 500 662 clusters de taille 1 (qui ne contiennent qu’une seule adresse) avec <em>h1</em>, 72.04% des clusters, et 39 012 729 avec les deux heuristiques <em>h1 et h2</em> soit 69.7%.</p></li>
+<li><p>Globalement, nous remarquons que les clusters ayant peu d’adresses sont les plus nombreux. On déduit de cette remarque, que les heuristiques ne sont pas efficaces. On pourrait expliquer cela par le fait que de nombreux utilisateurs de la blockchain ne réutilisent pas, sinon peu, les mêmes adresses bitcoin, ou font beaucoup recours au mixage.</p></li>
+<li><p>On observe que les résultats obtenus par <em>h1</em> et <em>h1-h2</em> sont similaires. Dans les deux cas, on remarque une relation inverse entre taille des clusters et nombre de clusters de cette taille. Quand le premier augmente, le second décroît.</p></li>
+</ul>
+
+<table>
+<caption>Tailles des clusters les plus fréquents (top 10). Comparaisons des h1 et h2.<span label="clusters-freq"></span></caption>
+<thead>
+  <tr>
+    <th class="tg-0lax"></th>
+    <th class="tg-0lax" colspan="2">h1</th>
+    <th class="tg-0lax" colspan="2">h1 and h2</th>
+  </tr>
+</thead>
+<tbody>
+<tr class="even">
+<td style="text-align: right;">cluster size</td>
+<td style="text-align: right;">counts</td>
+<td style="text-align: right;">%p</td>
+<td style="text-align: right;">counts</td>
+<td style="text-align: right;">%p</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"> 1</td>
+<td style="text-align: right;">53500662</td>
+<td style="text-align: right;">72.040273</td>
+<td style="text-align: right;">39012729</td>
+<td style="text-align: right;">69.725985</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">14780139</td>
+<td style="text-align: right;">19.901908</td>
+<td style="text-align: right;">10400586</td>
+<td style="text-align: right;">18.588577</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2859909</td>
+<td style="text-align: right;">3.850955</td>
+<td style="text-align: right;">2306626</td>
+<td style="text-align: right;">4.122546</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1058389</td>
+<td style="text-align: right;">1.425153</td>
+<td style="text-align: right;">1632923</td>
+<td style="text-align: right;">2.918462</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">540161</td>
+<td style="text-align: right;">0.727343</td>
+<td style="text-align: right;">621854</td>
+<td style="text-align: right;">1.111416</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">288561</td>
+<td style="text-align: right;">0.388556</td>
+<td style="text-align: right;">470917</td>
+<td style="text-align: right;">0.841652</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">181757</td>
+<td style="text-align: right;">0.244741</td>
+<td style="text-align: right;">237936</td>
+<td style="text-align: right;">0.425254</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">129165</td>
+<td style="text-align: right;">0.173925</td>
+<td style="text-align: right;">191667</td>
+<td style="text-align: right;">0.342559</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">100293</td>
+<td style="text-align: right;">0.135048</td>
+<td style="text-align: right;">126987</td>
+<td style="text-align: right;">0.226959</td>
+</tr>
+</tbody>
+</table>
+<h2 id="identification-des-vrais-acteurs">Identification des vrais acteurs</h2>
+<p>Il est possible de connaître les <em>vrais identités</em> de certains acteurs à partir de leurs adresses publiques. En effet, de nombreux acteurs sont obligés de faire connaître leurs adresses par internet ou par d’autres moyens. C’est le cas des vendeurs, des services de mixage, des demandeurs de dons, les auteurs de pyramides de Ponzi et autres arnaqueurs, etc. Pour divers raisons, d’autres utilisateurs, publient leurs adresses sur les réseaux sociaux, ou sur des forums de discussion à propos du Bitcoin, etc.</p>
+<h3 id="constitution-dune-base-de-données-des-vrais-acteurs" class="unnumbered unnumbered">Constitution d’une base de données des &quot;vrais acteurs&quot;</h3>
+<p>Pour connaître les vrais acteurs, des auteurs tels que <span class="citation" data-cites="meiklejohn_fistful_2013">(Meiklejohn et al. 2013)</span> et <span class="citation" data-cites="bartoletti_data_2018">(Bartoletti, Pes, and Serusi 2018)</span>, ont tout simplement effectué des transactions bitcoin avec plusieurs acteurs de la blockchain, leur permettant ainsi de connaître leurs adresses bitcoin. Entre autres, ils ont réalisé des transactions de vente et d’achats de biens, fait du mixage, participé à des jeux de hasard en ligne, etc. Ils ont aussi collectionné des noms sur internet en faisant du web &lt;&lt;scrapping&gt;&gt;. Les jeux de données de ces auteurs sont accessibles sur internet.</p>
+<p>Nous avons réutilisé leurs jeux de données, puis des données obtenus par web &lt;&lt;scrapping&gt;&gt;, qui ont été obtenu par des étudiants de mon Superviseur de stage. La totalité des données à notre disposition fait une base de données de 30 083 d’adresses d’utilisateurs labellisées par leurs noms. Nous présentons sur la figure <a href="#exemple-dictionnaire-names" data-reference-type="ref" data-reference="exemple-dictionnaire-names">[exemple-dictionnaire-names]</a> un extrait du dictionnaire que nous avons construit sur Python. Les clés du dictionnaire sont des entiers naturels qui correspondent à des adresses bitcoins. Pour retrouver ces dernières, on consulte le dictionnaire des adresses présenté dans la section <a href="#dict-adds" data-reference-type="ref" data-reference="dict-adds">[dict-adds]</a> . Les valeurs sont les labels, ce que nous considérons ici comme vrais noms.</p>
+<p>La figure <a href="#exemple-dictionnaire-names" data-reference-type="ref" data-reference="exemple-dictionnaire-names">[exemple-dictionnaire-names]</a> montre que l’adresse numéro <em>35468562</em> appartient à &lt;&lt;<em>CryptoTorLocker2015</em>&gt;&gt;. Remarquons que, pour certains labels tels que <em>7ev3n</em> et <em>TeslaCrypt</em>, ce que nous appelons &lt;&lt;vraies identités&gt;&gt;, correspond encore à d’autres pseudonymes. Pour retrouver leurs vraies identités, un second effort est nécessaire. Par exemple, si besoin, une autorité publique telle que la Police, peut retrouver leurs vraies identités.</p>
+<p>En revanche, certains labels tels que <em>Gavin Andresen</em>, est un nom propre, et <em>juntima</em> est le nom d’un hôtel. On connait les adresses bitcoins d’ONG telles que <em>l’UNICEF</em>, <em>Save the Children</em>; de même que, pour des projets tels que, Sci-hub, Prate bay, etc. On retrouve une liste de quelques acteurs, en suivant <a href="https://en.bitcoin.it/wiki/Donation-accepting_organizations_and_projects">ce lien</a>. C’est le cas pour certains acteurs de la blockchain, tels que les wallets, places boursières, certains services de mixage et certains vendeurs.</p>
+
+<figure>
+<img src="../../../../images/exemple-dictionnaire-names.PNG" alt="Dictionnaire des vrais noms des acteurs (extrait)" id="exemple-dictionnaire-names" /><figcaption>Dictionnaire des vrais noms des acteurs (extrait)<span label="exemple-dictionnaire-names"></span></figcaption>
+</figure>
+<h3 id="associations-des-clusters-aux-vraies-identités">Associations des clusters aux vraies identités</h3>
+<p>L’association des vraies identités aux clusters consiste à rechercher dans les clusters, les adresses collectées avec les labels sur internet. Par exemple, si on retrouve l’adresse <em>35468562</em> dans un cluster, on déduit que ce cluster appartient à textit<span>CryptoTorLocker2015</span>. Le nombre d’identités dont nous disposons est de 30 083. Il est très faible par rapport au 74M de clusters que nous avons obtenus avec h1. En conséquence, nous n’avons réussi à identifier que quelques milliers d’acteurs.</p>
+<p>Dans les tableaux <a href="#names1" data-reference-type="ref" data-reference="names1">[names1]</a> et <a href="#names2" data-reference-type="ref" data-reference="names2">[names2]</a>, nous présentons les vraies identités que nous avons trouvé, associés aux 10 plus gros groupes. Chaque colonne contient un groupe et les labels qui lui sont associés. Le tableau <a href="#names1" data-reference-type="ref" data-reference="names1">[names1]</a> contient les clusters obtenus par l’heuristique 1:</p>
+<ul>
+<li><p>Nous trouvons que, 143 identités appartiennent à l’acteur qui a le plus d’adresses dans la blockchain, le cluster 1. Il a les noms suivants <em>zakyzakj1, starik69, cook7096@gmail.com, etc</em>. 454 noms appartiennent au deuxième plus gros groupe d’adresses, le Cluster 3.</p></li>
+<li><p>Nous n’avons trouvé aucune identité aux 2e et 4e plus gros clusters.</p></li>
+</ul>
+
+<table>
+  <caption>Identification des acteurs obtenus par le groupement h1.<span label="names1"></span></caption>
+  <thead>
+  <tr class="header">
+  <th style="text-align: left;">Cluster_1</th>
+  <th style="text-align: left;">Cluster_3</th>
+  <th style="text-align: left;">Cluster_5</th>
+  <th style="text-align: left;">Cluster_6</th>
+  <th style="text-align: left;">Cluster_7</th>
+  <th style="text-align: left;">Cluster_8</th>
+  <th style="text-align: left;">Cluster_9</th>
+  <th style="text-align: left;">Cluster_10</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr class="odd">
+  <td style="text-align: left;">zakyzakj1</td>
+  <td style="text-align: left;">dipkiss</td>
+  <td style="text-align: left;">gudstuff</td>
+  <td style="text-align: left;">naiyana</td>
+  <td style="text-align: left;">booyakamix</td>
+  <td style="text-align: left;">clamander</td>
+  <td style="text-align: left;">luwei1984</td>
+  <td style="text-align: left;">kamalosman</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">chazley</td>
+  <td style="text-align: left;">YanNaing</td>
+  <td style="text-align: left;">che rosnani</td>
+  <td style="text-align: left;">Aekthada</td>
+  <td style="text-align: left;">az09za90za</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">Rojana Deesean</td>
+  <td style="text-align: left;">Deemo</td>
+  </tr>
+  <tr class="odd">
+  <td style="text-align: left;">starik69</td>
+  <td style="text-align: left;">SolarNick</td>
+  <td style="text-align: left;">sakdmmm</td>
+  <td style="text-align: left;">Luckydayman</td>
+  <td style="text-align: left;">bmbmb</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">obsarita</td>
+  <td style="text-align: left;">liburu</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">songyuanwei</td>
+  <td style="text-align: left;">kyawhlaing</td>
+  <td style="text-align: left;">Limtriang</td>
+  <td style="text-align: left;">pennee</td>
+  <td style="text-align: left;">1badbullitt</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">vpwdle23</td>
+  <td style="text-align: left;">pneumatic5</td>
+  </tr>
+  <tr class="odd">
+  <td style="text-align: left;">NxtStakeAssets</td>
+  <td style="text-align: left;">icash</td>
+  <td style="text-align: left;">LennonNZ</td>
+  <td style="text-align: left;">reallyfunny</td>
+  <td style="text-align: left;">Keitaru84</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">jiaxuan1023</td>
+  <td style="text-align: left;">Adam3mmm</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">Light</td>
+  <td style="text-align: left;">shawwal</td>
+  <td style="text-align: left;">Chris7sa</td>
+  <td style="text-align: left;">say pisit</td>
+  <td style="text-align: left;">meisenst</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  </tr>
+  <tr class="odd">
+  <td style="text-align: left;">Dexon</td>
+  <td style="text-align: left;">kavenlim</td>
+  <td style="text-align: left;">dongluo</td>
+  <td style="text-align: left;">gegist21</td>
+  <td style="text-align: left;">powderfan</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">vellfire</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">chenhui1</td>
+  <td style="text-align: left;">Kosterc</td>
+  <td style="text-align: left;">sergeyvademan</td>
+  <td style="text-align: left;">thainaraty</td>
+  <td style="text-align: left;">Chainsaw</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">houshan</td>
+  </tr>
+  <tr class="odd">
+  <td style="text-align: left;">firejuan</td>
+  <td style="text-align: left;">heinmyatsoe</td>
+  <td style="text-align: left;">piansmall</td>
+  <td style="text-align: left;">panida</td>
+  <td style="text-align: left;">Templeton</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">Zwai12</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">cook7096@gmail.com</td>
+  <td style="text-align: left;">mooen</td>
+  <td style="text-align: left;">kimheng</td>
+  <td style="text-align: left;">Boonlert</td>
+  <td style="text-align: left;">septarious</td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;"></td>
+  <td style="text-align: left;">denis pevtsov</td>
+  </tr>
+  <tr class="odd">
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  <td style="text-align: left;">...</td>
+  </tr>
+  <tr class="even">
+  <td style="text-align: left;">143</td>
+  <td style="text-align: left;">454</td>
+  <td style="text-align: left;">443</td>
+  <td style="text-align: left;">732</td>
+  <td style="text-align: left;">31</td>
+  <td style="text-align: left;">1</td>
+  <td style="text-align: left;">5</td>
+  <td style="text-align: left;">19</td>
+  </tr>
+  </tbody>
+  </table>
+  </body>
+
+<p>Dans le tableau <a href="#names2" data-reference-type="ref" data-reference="names2">[names2]</a> nous présentons les mêmes résultats pour les clusters obtenus par l’application de l’heuristique 1 et l’heuristique 2.</p>
+<ul>
+<li><p>16 291 identités appartiennent au plus gros groupe d’adresses, le cluster 1. Le cluster 5 détient 1 seul label.</p></li>
+<li><p>Nous n’avons trouvé aucune identité pour le reste des groupes du top 10.</p></li>
+<li><p>Ces résultats nous interrogent sur l’efficacité de l’heuristique 2. Le groupement avec cette <em>h1 et h2</em> rassemble tous les gros clusters obtenus avec uniquement <em>h1</em>.</p></li>
+</ul>
+
+<table>
+<caption>Identification des acteurs obtenus par le groupement h1-h2<span label="names2"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Cluster_0</th>
+<th style="text-align: left;">Cluster_5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">wangtao13904039526</td>
+<td style="text-align: left;">xiaoyuyu111</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ShrektZombie</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">indra leksana</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Zhang Tingting</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">azhenmmm</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">leoheart0924</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">che rosnani</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LennonNZ</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">chazley</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ipankkerz</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">...</td>
+<td style="text-align: left;">...</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16291</td>
+<td style="text-align: left;">1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="idées-damélioration-du-groupement" class="unnumbered unnumbered">Idées d’amélioration du groupement</h3>
+<p>On pourrait améliorer le groupement que nous avons réalisé avec l’heuristique 1 (voir ) par les vraies identités des acteurs. Si deux ou plusieurs clusters ont des noms en commun, on peut en déduire que tous ces clusters appartiennent au même individu, à condition qu’ils ne soient pas des mixeurs. Ainsi, on pourrait rassembler des clusters isolés qui appartiennent au même acteur et peut être réduire le nombre de groupes à taille unique.</p>
+<p>Il est possible que le rajout de l’heuristique 2 marche mieux, si on arrive à isoler les transactions de mixage, de ventes ou d’achats de bitcoins, puis à déterminer avec quelles unités monétaires, en satoshis, ou en monnaies fiduciaires, les utilisateurs échangent sur les wallets.</p>
+<h2 id="construction-dun-graphe-des-acteurs-et-des-transactions">Construction d’un graphe des acteurs et des transactions</h2>
+<p>Nous nous sommes servi de Neo4j pour construire un graphe qui met en relation les transactions, les adresses bitcoins et les acteurs de la blockchain du Bitcoin. Pour ce graph, nous considérons comme acteur, un cluster d’adresses. Nous n’utilisons que les clusters obtenus par l’heuristique 1. Nous avons décidé de ne pas prendre en compte l’heuristique 2 pour les raisons évoquées plus haut. Ce graphe sert aussi de base de données, qui contient toutes les informations importantes extraites de la blockchain, nécessaires à l’étude du réseau du Bitcoin.</p>
+<h3 id="les-nœuds-du-graphe" class="unnumbered unnumbered">Les Nœuds du Graphe</h3>
+<p>Le graphe dispose de trois catégories de nœuds, les adresses uniques, les acteurs, et les transactions. Nous faisons de chaque adresse unique un nœud du graphe, de même, pour chaque transaction, et chaque acteur (ou groupe d’adresses).</p>
+<dl>
+<dt>Addresses</dt>
+<dd><p>Les nœuds &lt;&lt;addresses&gt;&gt; sont l’ensemble de toutes les adresses bitcoin uniques de la blockchain. Chaque nœud est une adresse, qui contient les informations suivantes, le hash de l’adresse, la vraie identité associée à l’adresse, et l’entier naturel correspondant à l’adresse. Ces informations sont stockées dans Neo4j, dans ce que l’on appelle, les <em>propriétés</em> du nœud.</p>
+</dd>
+<dt>Actors</dt>
+<dd><p>Ces nœuds sont l’ensemble des groupes d’adresses. Chaque cluster correspond à un nœud. Dans ses propriétés, nous stockons, le numéro du cluster et la valeur du nombre total d’adresses qu’il contient. Les clusters sont numérotés par ordre croissant, selon leurs tailles. Les groupes nommés par de petits numéros contiennent le plus d’adresses. Par exemple, le plus grand cluster est nommé 0, le deuxième plus gros est nommé 1, ainsi de suite.</p>
+</dd>
+<dt>Transactions</dt>
+<dd><p>C’est l’ensemble des transactions. Chaque transaction constitue un nœud qui a les propriétés suivantes, l’identifiant de la transaction, la marque temporelle (ou <em>timestamp</em>), le taux d’échange, et la valeur totale de bitcoin échangée dans la transaction. Nous les nommons par ordre croissant, par exemple, Tx 1 est le nœud de la première transaction enregistrée dans la blockchain, Tx 2 la deuxième, et ainsi de suite.</p>
+</dd>
+</dl>
+
+<figure id="multifig">
+    <figure class=subfigure >
+    <img src="../../../../images/exemple-prop-adresse.PNG" id="noeuds-propriétés"/><figcaption class=subfigcaption>Un noeud Adresse</figcaption>
+    </figure>
+    <figure class=subfigure>
+    <img src="../../../../images/exemple-prop-actor.PNG" /><figcaption class=subfigcaption> Un noeud Acteur (cluster) </figcaption>
+    </figure>
+     <figure class=subfigure>
+    <img src="../../../../images/exemple-prop-transaction.PNG" /><figcaption class=subfigcaption> Un noeud Transaction </figcaption>
+    </figure>
+    <figcaption>Illustration des noeuds et leur propriétés <span label="noeuds-propriétés"></span> </figcaption>
+ </figure>
+
+
+<p>Dans la figure <a href="#noeuds-propriétés" data-reference-type="ref" data-reference="noeuds-propriétés">[noeuds-propriétés]</a>, nous montrons un exemple des 3 types de nœuds du graphe et leurs propriétés. Le nœud adresse qui est présenté a l’<code>addresseid</code> 71842, est aussi la valeur de l’adresse dans le dictionnaire des adresses. Et <code>bitcoin_adresse</code> est l’adresse bitcoin au format alphanumérique. <code>actor_identity</code> est la vraie identité de l’acteur à qui appartient cette adresse.</p>
+<p>Le nœud Acteur présenté sur la figure a pour identifiant <code>actorsId</code> 22430750, c’est le numéro du cluster. La taille du cluster <em>cluster_size</em>, indique qu’il ne contient qu’une seule adresse.</p>
+<p>Le nœud transaction de cet exemple, est nommé Tx 87578663. <code>transactionId</code> est l’identifiant unique, c’est le <em>hash</em> de la transaction. <code>total_value</code> est la valeur totale de bitcoins envoyées. <code>exchange_rate</code> est le taux d’échange au moment de la transaction.</p>
+<h3 id="les-liens-du-graphe" class="unnumbered unnumbered">Les Liens du Graphe</h3>
+<p>Nous avons créé deux types de liens entre les nœuds du graphes. Des liens entre les adresses et les transactions, des liens entre les adresses et les acteurs. Nous appelons ces liens respectivement, <code>IS_IN_TRANSACTION</code> et <code>BELONG_TO_ACTOR</code> dans Neo4j.</p>
+<dl>
+<dt>IS_IN_TRANSACTION</dt>
+<dd><p>Si une adresse apparaît en entrée ou en sortie d’une transaction, nous créons un <em>lien dirigé</em>, qui va du nœud de l’adresse vers le nœud de la transaction. Dans les propriétés du lien, nous marquons, si l’adresse est en entrée ou en sortie de la transaction, la valeur en bitcoin associée, et leurs identifiants uniques.</p>
+</dd>
+<dt>BELONG_TO_ACTOR</dt>
+<dd><p>Si une adresse fait partie d’un cluster, donc appartient à un acteur, nous créons un lien dirigé, de l’adresse vers l’acteur. Par exemple, le plus gros cluster a environ 11M d’adresses, en conséquence, il a aussi 11M de liens avec 11M de nœuds d’adresses. Dans les propriétés des liens, nous stockons, les vrais noms identifiés des propriétaires des adresses.</p>
+</dd>
+</dl>
+
+<figure id="multifig">
+  <figure class=subfigure >
+  <img src="../../../../images/exemple-prop-isactor.PNG" id="lien-propriétés"/><figcaption class=subfigcaption>Lien transaction-adresse</figcaption>
+  </figure>
+  <figure class=subfigure>
+  <img src="../../../../images/exemple-prop-istx.PNG" /><figcaption class=subfigcaption> Lien adresse-acteur </figcaption>
+  </figure>
+  <figcaption>Illustration des types de liens et leurs propriétés. <span label="lien-propriétés"></span> </figcaption>
+</figure>
+
+<p>La figure <a href="#lien-propriétés" data-reference-type="ref" data-reference="lien-propriétés">[lien-propriétés]</a> illustre les deux types de liens que nous avons créés et leurs propriétés. Le premier est un chemin entre l’adresse et la transaction, <code>IS_IN_TRANSACTION</code>.<code>Tx_INS_or_OUTS : out</code> indique que le nœud adresse qui est associé, est en sortie de la transaction. <code>value</code> indique la valeur de bitcoins en sortie (ou envoyés). Le deuxième chemin, <code>BELONG_TO_ACTOR</code> est un chemin entre un acteur et son adresse bitcoin. L’acteur en question est <em>alenasultan28</em>.</p>
+<p>Dans les tableaux <a href="#graph-liens" data-reference-type="ref" data-reference="graph-liens">[graph-liens]</a> et <a href="#graph-n" data-reference-type="ref" data-reference="graph-n">[graph-n]</a>, nous présentons le nombre total de nœuds et de liens du graphe. Au total, il avait plus de 398 Millions de nœuds, et plus 1 Milliards de liens.</p>
+
+<table>
+<caption>Nb. total de chaque catégorie de Noeuds.<span label="graph-n"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Chemins</th>
+<th style="text-align: right;">Totaux</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IS_IN_TRANSACTION</td>
+<td style="text-align: right;">829981034</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BELONG_TO_ACTOR</td>
+<td style="text-align: right;">171484007</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Nb. total de chaque catégorie de Noeuds.<span label="graph-n"></span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Nœuds</th>
+<th style="text-align: right;">Totaux</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Addresses</td>
+<td style="text-align: right;">171484007</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Actors</td>
+<td style="text-align: right;">74264935</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Transactions</td>
+<td style="text-align: right;">152673373</td>
+</tr>
+</tbody>
+</table>
+<p>Sur la figure <a href="#exemple-general-graph" data-reference-type="ref" data-reference="exemple-general-graph">[exemple-general-graph]</a> nous présentons un extrait du graphe. Les nœuds en couleur bleue sont ceux des adresses, en jaune, ceux des acteurs, en rouge, ceux des transactions. Pour une transaction donnée, il faut regarder dans les propriétés des liens de couleur rouge, pour savoir, si une adresse est en entrée ou en sortie de transaction, et pour connaître la valeur de bitcoin qu’elle reçoit ou envoie. Un nœud adresse lié à un nœud acteur signifie que, cette adresse appartient à cet acteur ou groupe d’adresses. Pour savoir s’il y a eu une transaction entre deux acteurs, on regarde si, les adresses qui sont liées à ces acteurs, sont aussi liées à une même transaction. Ainsi, on lit sur le graphe, que:</p>
+<ul>
+<li><p>l’adresse 71842 appartient à l’acteur 224307, et elle participe dans 3 transactions. On ne le voit pas sur l’image, mais dans Neo4j, il est indiqué que l’adresse est apparu en entrée et en sortie de ces transactions.</p></li>
+<li><p>L’acteur 224307 a participé aux 5 transactions suivantes, Tx 8727001, Tx 875786, Tx 856981, Tx 882373, et Tx 872701, en utilisant l’adresse 71842. Il a effectué ces 5 transactions avec les acteurs 545162, 149749, et 441630. Ces derniers ont utilisé, respectivement, les adresses 814279, 618923 et 472927 au-cours de ces transactions.</p></li>
+<li><p>La date de réalisation de chaque transaction, la quantité de bitcoins envoyée ou reçue, les <em>hashs</em> des transactions et des adresses bitcoins, sont marquées dans les propriétés des liens et des nœuds.</p></li>
+</ul>
+
+<figure>
+<img src="../../../../images/exemple-general-graph.PNG" alt="Extrait du graphe du réseau du Bitcoin." id="exemple-general-graph" /><figcaption>Extrait du graphe du réseau du Bitcoin.<span label="exemple-general-graph"></span></figcaption>
+</figure>
+<h3 id="quelques-statistiques-que-lon-peut-extraire-du-graphe-du-réseau-du-bitcoin">Quelques statistiques que l’on peut extraire du graphe du réseau du Bitcoin</h3>
+<p>Le graphe du réseau du Bitcoin que nous avons construit est une base de données de graphe. Elle contient toutes les informations importantes de la blockchain du Bitcoin. Nous pourrons lui appliquer la théorie des graphes afin d’étudier les interactions entre les acteurs, les adresses, et les transactions, etc. Elle nous permettra de visualiser le réseau du Bitcoin, et d’y extraire toutes sortes d’informations. De plus, par rapport à nos données brutes directement issues de la blockchain, la base de données graphe a l’avantage d’être mieux performante en termes de rapidité d’accès et d’extractions, et de mémoire de stockage d’informations. Elle nous procure aussi une facilité d’utilisation. L’extraction de données de Neo4j se fait à l’aide du langage Cypher. A titre d’illustration, nous avons cherché les informations suivantes de la base de données, mais nous n’avons pas eu le temps de présenter les résultats dans ce rapport.</p>
+<ul>
+<li><p>Nous avons calculé des statistiques sur les adresses:</p>
+<ul>
+<li><p>Est-ce que les adresses les plus fréquentes dans la blockchain sont les plus riches en bitcoins;</p></li>
+<li><p>Les adresses les plus fréquentes appartiennent à quels acteurs? aux plus gros acteurs?</p></li>
+</ul></li>
+<li><p>A propos des acteurs, nous avons cherché:</p>
+<ul>
+<li><p>Qui sont les plus riches?</p></li>
+<li><p>Quels sont les acteurs qui font le plus de transactions? sont ils les plus riches?</p></li>
+<li><p>Qui sont ceux qui échangent le plus entre eux.</p></li>
+</ul></li>
+<li><p>Statistiques sur les valeurs:</p>
+<ul>
+<li><p>Quelles sont les valeurs de bitcoins les plus fréquentes dans la blockchain.</p></li>
+<li><p>Les valeurs les plus élevées ont été reçues/envoyées par quelles adresses, dans quelles transactions?</p></li>
+</ul></li>
+<li><p>Statistiques sur le minage:</p>
+<ul>
+<li><p>On peut retrouver le nombre de minages dans la blockchain.</p></li>
+<li><p>On peut étudier les frais de transactions, leur évolutions dans le temps.</p></li>
+<li><p>Qui sont les mineurs les plus riches?</p></li>
+</ul></li>
+</ul>
+<p>Pour nous le plus important était de mettre en place une base de données contenant les informations essentielles de la blockchain du Bitcoin. Ainsi, on pourra extraire des données qui nous intéressent de cet entrepôt de données, puis appliquer des techniques de fouilles de données, d’apprentissage statistique et de théories des graphes, pour mieux comprendre le réseau du Bitcoin (fonctionnement, interactions économiques, évolutions, etc).</p>
+
+<h2 id="ref">References</h2>
+<div id="refs" class="references">
+<div id="ref-bartoletti_data_2018">
+<p>Bartoletti, Massimo, Barbara Pes, and Sergio Serusi. 2018. “Data Mining for Detecting Bitcoin Ponzi Schemes,” March.</p>
+</div>
+<div id="ref-meiklejohn_fistful_2013">
+<p>Meiklejohn, Sarah, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker, and Stefan Savage. 2013. “A Fistful of Bitcoins: Characterizing Payments Among Men with No Names.” In <em>Proceedings of the 2013 Conference on Internet Measurement Conference</em>, 127–40. ACM.</p>
+</div>
+</div>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>L’accès au serveur nécessite une connexion VPN. Grâce à Autoconnect, nous avons pu avoir accès au VPN à partir d’un ordinateur qui fonctionne sous Windows.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</section>
+</body>
+</html>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="../../../../index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="../../../../images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+    
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'G-P6FER778X2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+  </body>
+</html>
+
