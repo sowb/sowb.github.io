@@ -3,9 +3,6 @@ body {
   margin: 0;
   padding: 0;
   position: relative;
-}
-
-body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -22,6 +19,13 @@ h6 {
   color: #222;
 }
 
+a {
+  outline: none;
+}
+
+code {
+  background-color: rgba(0, 0, 0, 0.02);
+}
 dt{
   font-weight: bold;
 }
@@ -72,14 +76,6 @@ img{
   max-width:100%;
 }
 /*================================*/
-
-a {
-  outline: none;
-}
-
-code {
-  background-color: rgba(0, 0, 0, 0.02);
-}
 
 .wrapper {
   overflow: hidden;
@@ -260,11 +256,11 @@ code {
 .archive-item-link:hover {
   border-bottom-color: #222;
 }
-
-
+ 
 .content {
   min-height: calc(100vh - 70px);
 }
+
 .footer {
   text-align: center;
   height: 80px;
@@ -306,6 +302,7 @@ code {
 .footer-links li:first-child::before {
   display: none;
 }
+
 .footer-links-kudos img {
   position: relative;
   top: 6px;
