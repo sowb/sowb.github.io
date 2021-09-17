@@ -247,6 +247,7 @@ img {
   line-height: 1.3em;
   text-align: left;
   color: rgb(6, 49, 20);
+
 }
 
 .archive-title {
@@ -255,8 +256,9 @@ img {
 }
 
 .archive-item {
-  margin: 5px 0 15px;
+  margin: 3px 0 10px;
   padding: 0;
+
 }
 
 .archive-item-date {
@@ -268,7 +270,7 @@ img {
 }
 .sum {
   margin-top: 10px;
-  margin-bottom: 70px;
+  margin-bottom: 40px;
 }
 .sum-link {
   font-size: 14px;
@@ -392,22 +394,6 @@ img {
 }
 
 
-/* 
-.sidebar .logo-title .title h6 {
-  text-transform: uppercase;
-  font-size: 2rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-  line-height: 1;
-  margin: 1em;
-}
-
-.sidebar .logo-title .title a {
-  text-decoration: none;
-  color: var(--heading-color);
-  font-size: 2rem;
-  font-weight: bold;
-} */
 
 .sidebar .title { 
   text-decoration: none;
@@ -443,12 +429,12 @@ img {
   color: #2660ab;
 }
  
-/* .main {
-  max-width: 850px;
+.main {
+  max-width: 900px;
   margin-left: 160px; 
-  font-size: 28px; 
-  padding: 0px 10px;
-}  */
+  font-size: 20px; 
+  padding: 0px 0px;
+} 
 
 /* 
 @media (min-width: 600px) {
