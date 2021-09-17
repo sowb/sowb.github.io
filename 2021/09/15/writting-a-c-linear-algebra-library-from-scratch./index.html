@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+<title>Writting a C&#43;&#43; linear algebra library from scratch. - bouba&#39;s blog</title>
+<meta property="og:title" content="Writting a C&#43;&#43; linear algebra library from scratch. - bouba&#39;s blog">
+
+
+  <link href='../../../../favicons.ico' rel='icon' type='image/x-icon'/>
+
+
+  
+
+
+
+
+
+
+
+
+<link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="../../../../css/fonts.css" media="all">
+<link rel="stylesheet" href="../../../../css/main.css" media="all">
+
+
+
+  </head>
+  
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P6FER778X2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P6FER778X2');
+</script>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  
+
+  <ul class="nav-links">
+    
+    <li><a href="../../../../">Home</a></li>
+    
+    <li><a href="../../../../about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">11 min read</span>
+    
+
+    <h1 class="article-title">Writting a C&#43;&#43; linear algebra library from scratch.</h1>
+
+    
+    <span class="article-date">2021-09-15</span>
+    
+
+    <div class="article-content">
+      <!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title> </title>
+  <style>
+    html {
+      line-height: 1.7;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+/*     body {
+      margin: 0 auto;
+      max-width: 40em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px; 
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    } */
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin-top: 1.7em;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+   
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1.7em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1.7em 0 1.7em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      font-style: italic;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      background-color: #f0f0f0;
+      font-size: 85%;
+      margin: 0;
+      padding: .2em .4em;
+    }
+
+    dd{margin-top: 3ex;
+    }
+    
+    pre {
+      line-height: 1.5em;
+      padding: 1em;
+      background-color: #f0f0f0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin-top: 1.7em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+    th, td {
+      border-bottom: 1px solid lightgray;
+      padding: 1em 3em 1em 0;
+    }
+
+/*     header {
+      margin-bottom: 6em;
+      text-align: center;
+    } */
+    
+    nav a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title"> </h1>
+</header>
+<!--
+
+title: "Writting a linear algebra library on C++
+date: "2021-09-15"
+summary: "This document describes the mathematical implemention of PCA, SVD, QR algorithm, etc., and code implemention using C++." 
+
+-->
+<style>
+.cols {
+  column-count: 2;
+  column-rule: 1px solid lightblue;
+}
+</style>
+<h1 id="introduction">Introduction</h1>
+<p>This is a technical note explaining how I used C++ to implement a basic linear algebra library, which can compute numerically the principal component analysis (PCA) using the singular value decomposition (SVD). I implemented the SVD and all algorithms necessary to compute it, from scratch. In the following, first, I present mathematically these algorithms and the matrix operations. After that, I am explaining the C++ implementation (the source code), notably, the classes and funtions that I wrote to perform the computations.</p>
+<h1 id="the-math-implemented">The Math implemented</h1>
+<p>This library perform PCA using the SVD. Let <span class="math inline">\(X\)</span> be an <span class="math inline">\(n-by-m\)</span> <em>real</em> matrix (a dataset).</p>
+<h3 id="mathematically-the-svd-of-x-is-defined-as">Mathematically, the SVD of X is defined as</h3>
+<p><span class="math display">\[X = U\Sigma V^{t}\]</span></p>
+<ul>
+<li><span class="math inline">\(V\)</span> correspond to the eigenvectors of <span class="math inline">\(X^tX\)</span>, where <span class="math inline">\(X^t\)</span> is the transpose of <span class="math inline">\(X\)</span>. <span class="math inline">\(V^t\)</span> is the matrix transpose of <span class="math inline">\(V\)</span></li>
+<li><span class="math inline">\(U\)</span> correspond to the eigenvectors of <span class="math inline">\(XX^t\)</span>.</li>
+<li><span class="math inline">\(\Sigma\)</span> is a matrix containing the square root of the eigenvalues of <span class="math inline">\(XX^t\)</span> or <span class="math inline">\(X^tX\)</span> (<span class="math inline">\(eigvalues(XX^t) = eigvalues(X^tX)\)</span>).</li>
+</ul>
+<h3 id="to-obtain-the-principal-components-from-the-svd">To obtain the principal components from the SVD:</h3>
+<ul>
+<li>Compute <span class="math inline">\(\bar{X}\)</span>, the colmeans of <span class="math inline">\(X\)</span>. Then compute : <span class="math inline">\(M = X - \bar{X}\)</span>.</li>
+<li>Compute the SVD of <span class="math inline">\(M\)</span>: <span class="math inline">\(M = U\Sigma V^t\)</span>.</li>
+<li>Compute the <strong>PC</strong> (principal components): <span class="math inline">\(PC = U\Sigma\)</span>.</li>
+<li>The Explained Variance is obtained from the computation: <span class="math inline">\(\frac{\sigma_i^2}{\sum_{i=0}^k\sigma_i^2}\)</span>, where <span class="math inline">\(\sigma_i\)</span> is a singular value.</li>
+</ul>
+<h3 id="computing-numerically-the-svd">Computing numerically the SVD</h3>
+<p>I computed <span class="math inline">\(Z\)</span>, <span class="math inline">\(V\)</span> and <span class="math inline">\(U\)</span> by the following way:</p>
+<ul>
+<li><p>I performed an eigendecomposition of <span class="math inline">\(X^tX\)</span> to obtain <span class="math inline">\(V\)</span> and <span class="math inline">\(\sqrt(\Sigma)\)</span>.</p>
+<blockquote>
+<p><span class="math inline">\(Z, V = eigendecomposition(X^tX)\)</span>.</p>
+</blockquote>
+<blockquote>
+<p>for each vector <span class="math inline">\(u_i\)</span> in the matrix <span class="math inline">\(U\)</span>, <span class="math inline">\(u_i = \frac{a_iv_i}{\sigma_i}\)</span>.</p>
+</blockquote></li>
+</ul>
+<p>Thus, to compute the SVD, I need to implement a numerical computation of eigenvectors and eigenvalues (the eigendecomposition).</p>
+<h4 id="how-to-compute-numerically-eigenvectors-and-eigenvalues"><em>How to compute numerically eigenvectors and eigenvalues?</em></h4>
+<p>There are many <a href="https://en.wikipedia.org/wiki/Eigenvalue_algorithm">algorithms to compute eigenivalues and eigenvectors</a>. One of the most used is the QR algorithm. Hence, to compute the eigen decomposition, I need to implement the QR algorithm first.</p>
+<dl>
+<dt>The QR algorithm</dt>
+<dd>Is used to find eigenvectors and eigenvalues of a matrix. Let <span class="math inline">\(A\)</span> be a matrix, the QR algorithm consist of computing iterativelly the <strong>QR factorization</strong> of <span class="math inline">\(A\)</span>. And the QR factorization of <span class="math inline">\(A\)</span> : <span class="math inline">\(A = QR\)</span>, <span class="math inline">\(Q\)</span> is an orthogonal matrix and <span class="math inline">\(R\)</span> is a triangular matrix.
+</dd>
+</dl>
+<p>The basic QR algorithm can be described by the following way:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> E <span class="op">=</span> A</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> V <span class="op">=</span> I       <span class="co"># I is the identity matrix </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="op">=</span> <span class="dv">1</span>,<span class="dv">2</span>, ... (until convergence)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> QR      <span class="co"># QR factorization</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> RQ      <span class="co"># The next A</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> V <span class="op">*</span> Q </span></code></pre></div>
+<p>At convergenace, <span class="math inline">\(E\)</span> becomes a triangular matrix and its diagonal elements are the eigenvalues of <span class="math inline">\(A\)</span>. The matrix <span class="math inline">\(V\)</span> contains the eigenvectors of <span class="math inline">\(A\)</span>. &gt; Note: eigenvalues are unique, but eigenvectors are not.</p>
+<p>To implement the QR algorithm, I need to implement first the <strong>QR factorization</strong> (also called QR decomposition), which consist of computing <span class="math inline">\(Q \text{ and } R\)</span>.</p>
+<h4 id="computing-q-and-r-numerically"><em>Computing Q and R numerically</em></h4>
+<p>There exist many methods to compute the orthogonal matrix <span class="math inline">\(Q\)</span> such as Gram-Schmidt, householder reflections, givens rotations. I choose to implement the Householder transformation.</p>
+<dl>
+<dt>Householder</dt>
+<dd>The householder reflection of a vector <span class="math inline">\(x \in A_{n \times m}\)</span> is the matrix <span class="math inline">\(P\)</span>, given by :
+</dd>
+</dl>
+<p><span class="math display">\[P = I - 2\frac{vv^t}{v^tv},\]</span></p>
+<p>Where:</p>
+<ul>
+<li><p><span class="math inline">\(I\)</span> is an <span class="math inline">\(m-by-m\)</span> identity matrix,</p></li>
+<li><p><span class="math inline">\(v = x + sign(x[0]) \times norm(x) \times e\)</span> and <span class="math inline">\(x\)</span> and <span class="math inline">\(e\)</span> are columns vectors, of same length <span class="math inline">\(m\)</span>. And <span class="math inline">\(e = (1,0,0,...).\)</span></p></li>
+</ul>
+<p>To Compute the householder transformation, I need to implement all necessary matrix operations, matrix subscripting from scratch.</p>
+<h4 id="what-matrix-operations-are-needed"><em>What matrix operations are needed?</em></h4>
+<ul>
+<li>Arithmetic operations : Addition, multiplication, soustraction by another matrix and by a scaler. Plus division of matrix by a scaler.</li>
+<li>Matrix transformations : Transpose, diagonalization, norm of a vector</li>
+<li>Special matrices: Identity matrix, diagonal matrix, matrix of zeros,</li>
+<li>Statistics : mean, average of a matrix by column, by row, sum, etc.</li>
+</ul>
+<p>The implemented code written in C++ is explained below.</p>
+<h1 id="the-c-implementation-code">The C++ implementation code</h1>
+<blockquote>
+<p>The repo : https://github.com/sowb/lib-linear-alg</p>
+</blockquote>
+<p>I implemented a class named <em>Matrix</em> to represent a matrix. The file <strong>matrix.h</strong> contains the implementation.</p>
+<h3 id="private-members">Private members</h3>
+<p><code>nb_row</code> and <code>nb_col</code> store the number of rows and the number of columns of the matrix.</p>
+<p><code>mat_data</code> is a <code>std::vector&lt;double&gt;</code>, it stores the matrix data, the ij values.</p>
+<h3 id="constructors">Constructors</h3>
+<p>The class has 5 constructors. A constructor to generate random matrices (uniformely or normaly), a constructor to <em>load data from a CSV file</em> and create a matrix, a constructor to create a matrix using an initializer list or a vector of vectors.</p>
+<h3 id="overloaded-operators">Overloaded operators</h3>
+<em>Arithmetic operators</em> : implement arithmetic operations between a matrix and a matrix, between matrix and a scaler.<br />
+
+<div class="cols">
+<p>Multiplication <code>*</code>, <code>*=</code></p>
+<p>Addition <code>+</code>, <code>+=</code></p>
+<p>Substraction <code>-</code>, <code>-=</code></p>
+<p>Division <code>\</code></p>
+<p>Equal <code>==</code></p>
+<p>Difference <code>!=</code></p>
+</div>
+<p><em>The subscript operators</em> : <code>()</code> and <code>[]</code>, for accessing and modifying a matrix values, or slicing a matrix.</p>
+<h3 id="member-functions">Member functions</h3>
+<div class="cols">
+<p><code>column</code> and <code>row</code> to get a column or a row of a matrix.</p>
+<p><code>sub_matrix</code> return a submatrix of a matrix.</p>
+<p><code>shape</code> print the dimension of a matrix.</p>
+<p><code>reshape</code> reshape (change the number of rows and columns) of a matrix.</p>
+<p><code>add_row</code> and <code>add_column</code> add a new column or a new row to a matrix.</p>
+<p><code>remove_column</code> delete a column of a matrix.</p>
+<p><code>reorder_column</code> sort a matrix column, or flat matrix.</p>
+<p><code>sort_matrix</code> sort a matrix by column, using indexes</p>
+<p><code>T()</code> and <code>transpose</code> (a friend function): return the transpose of the matrix.</p>
+<p><code>Id</code> create a unitary matrix.</p>
+<p><code>sum</code> return the sum a flattened matrix.</p>
+<p><code>avg</code> compute the average of a flattened matrix.</p>
+<p><code>head</code> print first row of matrix</p>
+<p><code>print</code> formated print of a matrix, a value, a string.</p>
+<p><code>to_csv</code> save a matrix in a csv file.</p>
+</div>
+<h3 id="non-member-functions">Non member functions</h3>
+<div class="cols">
+<p><code>print</code> formated print of a matrix, a value, a string.</p>
+<p><code>as_matrix</code> convert a <code>std::vector</code> type to a Matrix type.</p>
+<p><code>as_vector</code> convert a Matrix type to <code>std::vector</code>.</p>
+<p><code>sgn</code> return the sign of a scalar</p>
+<p><code>norm</code> compute the norm of a vector</p>
+<p><code>elm2pow_n</code> compute the power n of a matrix.</p>
+<p><code>mean</code> and <code>stdev</code> compute the mean and standard deviation of a matrix.</p>
+<p><code>tile</code> repeat n times a row or column of a matrix.</p>
+<p><code>scale</code> scale a matrix <span class="math inline">\((x - \bar{x})/\sigma)\)</span></p>
+<p><code>uniform_dist</code> and <code>normal_dist</code> generate a random number from a uniform dist or normal distribution</p>
+<p><code>diag_matrix</code> return a diagonal matrix.</p>
+<p><code>householder</code> compute the householder reflector</p>
+<p><code>QR_factorization</code> Matrix factorization using QR-factorization</p>
+<p><code>is_triangular</code> Check if a matrix is triangular</p>
+<p><code>hessenberg</code> transform a matrix to upper hessemberg</p>
+<p><code>wilkinson_shift</code> compute the wilkinson shift</p>
+<p><code>QR_algorithm_w_shift</code> compute the QR algorithm with shift of a matrix.</p>
+<p><code>eigen_decomposition</code> eigen decompostion of a matrix using the basic QR algorithm</p>
+<p><code>SVD</code> Compute the singular value decomposition of a matrix using the QR algorithm.</p>
+<p><code>PCA</code> Compute the Principale Components Analysis of a matrix using SVD.</p>
+<p><code>save2csv</code> save a matrix to csv.</p>
+</div>
+<h3 id="futur-improvements">Futur improvements</h3>
+<blockquote>
+<p>The QR algorithm and the SVD implemented in this library are basic implementations. More sophisticated and efficient algorithms exist (see the references).</p>
+</blockquote>
+<p>The implementation can be improved in mathematical level and the computation level, by : * using parallelization and multi-threading, * calling LAPACK and BLAS routines from C++. This is what is done by the library Eigen (in C++) and Numpy (in Python).</p>
+<h2 id="how-to-test-the-library---simple-example">How to test the library - Simple example</h2>
+<ul>
+<li>Download the code at</li>
+<li>On the terminal run the file <code>usage-examples.cpp</code>.</li>
+</ul>
+<p><strong>Compile on Linx</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> lib-linear-alg/examples/</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> -std=c++11 usage-examples.cpp ../lib-unix/libLinearAlg.a <span class="kw">&amp;&amp;</span> <span class="ex">./a.out</span></span></code></pre></div>
+<p><strong>Compile on Windows</strong></p>
+<pre class="shell"><code>cd lib-linear-alg/examples/
+g++ -std=c++11 usage-examples.cpp ../lib-windows/libLinearAlg.lib &amp;&amp; ./a.exe</code></pre>
+<ul>
+<li>The content of the file <code>usage-examples.cpp</code>.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;../include/matrix.h&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>using namespace std;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Generate 5x4 random matrix</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    Matrix A(<span class="dv">5</span>, <span class="dv">4</span>, unif(-<span class="dv">1</span>, <span class="dv">1</span>)); <span class="co">//rnorm - for the normal distribution</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    A.print(<span class="st">&quot;matrix A:&quot;</span>);</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    transpose(A).print(<span class="st">&quot;Transpose A:&quot;</span>);</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create matrix 4x4 matrix ;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    Matrix B = <i>{</i><i>{</i><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">7</span>},</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                <i>{</i><span class="dv">3</span>, <span class="dv">41</span>, <span class="dv">9</span>, <span class="dv">4</span>, <span class="dv">1</span>},</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                <i>{</i><span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">86</span>, <span class="dv">4</span>}};</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    B.print(<span class="st">&quot;matrix B:&quot;</span>);</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Transpose matrix</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    Matrix C = B.T() * B;</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    C.print(<span class="st">&quot;B.T * B:&quot;</span>);</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">//Get the Diagonal of the matrix</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    Matrix D = diag(B);</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    D.print(<span class="st">&quot;Diagonal of D:&quot;</span>);</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a diagonal matrix</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    Matrix Dmat = diag_matrix(D);</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    Dmat.print(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Diagonal Matrix:&quot;</span>);</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">//QR factorization</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    Matrix E = <i>{</i><i>{</i><span class="dv">12</span>, -<span class="dv">51</span>, <span class="dv">4</span>}, <i>{</i><span class="dv">6</span>, <span class="dv">167</span>, -<span class="dv">68</span>}, <i>{</i>-<span class="dv">4</span>, <span class="dv">24</span>, -<span class="dv">41</span>}};</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    E.print(<span class="st">&quot;E:&quot;</span>);</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    print(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">QR factorization of E:</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    Matrix Q, R;</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    QR_factorization(E, &amp;Q, &amp;R);</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    Q.print(<span class="st">&quot;Q:&quot;</span>);</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    R.print(<span class="st">&quot;R:&quot;</span>);</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    (Q * R).print(<span class="st">&quot;Check QR = B&quot;</span>);</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// eigen decomposition</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    print(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Eigen decomposition of E&quot;</span>);</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    Matrix EigVal, EigVec;</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    eigen_decomposition(E, &amp;EigVal, &amp;EigVec); <span class="co">// use the basic QR</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    EigVal.print(<span class="st">&quot;EigVal:&quot;</span>);</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    EigVec.print(<span class="st">&quot;EigVec&quot;</span>);</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Eigen decomposition using QR with shift</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    QR_algorithm_w_shift(E, &amp;EigVal, &amp;EigVec);</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    EigVal.print(<span class="st">&quot;EigVal-QR shift:&quot;</span>);</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    EigVec.print(<span class="st">&quot;EigVec-QR shift&quot;</span>);</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">//Scaling a matrix : (x-x_bar)/std(x)</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    Matrix F = scale(B, <span class="st">&quot;col&quot;</span>);</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    F.print(<span class="st">&quot;B scaled:&quot;</span>);</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Singular Value Decomposition</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    print(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Singular Value Decomposition&quot;</span>);</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>    Matrix U, S, V;</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    SVD(F, &amp;U, &amp;S, &amp;V);</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    U.print(<span class="st">&quot;U:&quot;</span>);</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>    S.print(<span class="st">&quot;S:&quot;</span>);</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>    V.print(<span class="st">&quot;V:&quot;</span>);</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>    <span class="co">//Principal Component Analysis</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>    print(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Principal Components Analysis&quot;</span>);</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    Matrix Comp, Z, Var;</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">//scale B</span></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    PCA(F, &amp;Comp, &amp;Z, &amp;Var, <span class="dv">2</span>);</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>    Z.print(<span class="st">&quot;Singular Values :&quot;</span>);</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>    Var.print(<span class="st">&quot;Explained Variance :&quot;</span>);</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    Comp.print(<span class="st">&quot;Components&quot;</span>);</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Save the components in a file</span></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>    <span class="co">//Comp.to_csv(&quot;components&quot;);</span></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="computing-pca-using-the-library">Computing PCA using the library :</h3>
+<p>see in <a href="https://sowb.github.io/2021/09/15/principal-components-analysis-using-python-and-c-library/">my github page, Principal Components Analysis using Python and C++ library.:</a></p>
+<h1 id="references">References</h1>
+<ul>
+<li><strong>Numerical Linear Algebra</strong>,LLOYD N. TREFETHEN &amp; DAVID BAU III, <em>siam</em>, 1997.</li>
+<li><strong>Fundamentals of Matrix Computations</strong> 3rd, DAVID S. WATKINS, <em>WILEY</em>, 2010.</li>
+</ul>
+</body>
+</html>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="../../../../index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="../../../../images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/c&#43;&#43;.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css/highlight.js/9.12.0/languages/shell.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="../../../../js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'G-P6FER778X2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+  </body>
+</html>
+

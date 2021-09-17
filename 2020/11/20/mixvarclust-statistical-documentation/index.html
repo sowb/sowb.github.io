@@ -6,8 +6,8 @@
 <meta name="generator" content="Hugo 0.80.0" />
 
 
-<title>mixVarClust Statistical Documentation - Data science and Econometrics</title>
-<meta property="og:title" content="mixVarClust Statistical Documentation - Data science and Econometrics">
+<title>mixVarClust Statistical Documentation - bouba&#39;s blog</title>
+<meta property="og:title" content="mixVarClust Statistical Documentation - bouba&#39;s blog">
 
 
   <link href='../../../../favicons.ico' rel='icon' type='image/x-icon'/>
@@ -151,7 +151,7 @@ Define a stopping rule to terminate the algorithm.</p>
 <p>The second rule is an arbitrary pre-defined number of iterations of the algorithm. When the convergence of the log-likelihood takes too much time, it is better to use this second rule.</p>
 <h3 id="initialization-strategy-in-mixvarclust">Initialization strategy in mixVarClust</h3>
 <p>There are many ways to choose the initial parameters of the EM algorithm. In <code>mixVarClust</code>, I initialized randomly the labels of the data using a vector <span class="math inline"><em>z</em></span>, then I computed the estimates <span class="math inline"><em>Θ</em><sup>0</sup></span> and the incomplete log-likelihood (equation <a href="#incomplik" data-reference-type="ref" data-reference="incomplik">[incomplik]</a>). I repeated this process multiple times, then I chose as initial parameters, the parameters which gave the highest log-likelihood value.</p>
-<h2 id="retrieving-the-found-clusters">Retrieving the found clusters</h2>
+<h3 id="retrieving-the-found-clusters">Retrieving the found clusters</h3>
 <p>The end goal of clustering is to find the labels of the data. Let <span class="math inline"><strong>z̃</strong> = {<strong>z̃</strong><sub>1</sub>, ..., <strong>z̃</strong><sub><em>n</em></sub>}</span>, with <span class="math inline"><strong>z̃</strong><sub><em>i</em></sub> = (<strong>z̃</strong><sub><em>i</em>1</sub>, ..., <strong>z̃</strong><sub><em>i</em><em>K</em></sub>)</span>, be the labels. If <span class="math inline"><em>x</em><sub><em>i</em></sub></span> is assigned to the <span class="math inline"><em>k</em><em>t</em><em>h</em></span> cluster, <span class="math inline"><strong>z̃</strong><sub><em>i</em><em>k</em></sub> = 1</span>, else <span class="math inline">0</span>.</p>
 <p>There are two commonly used maximum likelihood approaches to attain this goal. The classification approach and mixture approach (for more details see <span class="citation" data-cites="rmixmod">(Biernacki et al. 2008)</span> and <span class="citation" data-cites="celeux_classification_1992">(Celeux and Govaert 1992)</span>). The classification approach consists of considering <span class="math inline"><em>z</em></span> as another unknown prameter and estimating it with <span class="math inline"><em>Θ</em></span>. In this case, the parameters are approximated using a variation of the EM algorithm called CEM algorithm. In <code>mixVarClust</code>, I am using the mixture approach. In this approch, the labels <span class="math inline"><em>z</em></span> are identified by using the <span class="math inline"><em>M</em><em>A</em><em>P</em></span> (Maximum A Posteriori) principle. Let <span class="math inline"><em>z</em><sub><em>i</em></sub></span> be the label of <span class="math inline"><em>x</em><sub><em>i</em></sub></span>, <span class="math inline">$\hat{\Theta} = (\hat{p_k},\hat{\theta_k})$</span> the estimate of <span class="math inline"><em>Θ</em> = (<em>p</em><sub><em>k</em></sub>, <em>θ</em><sub><em>k</em></sub>)</span> the MAP is as follows : <br /><span class="math display">$$\tilde{z}_{i k}=\left\{\begin{array}{l}
 1 \text { if } k=\arg \max _{\ell=1 \ldots, K} t_{\ell}\left(\mathbf{x}_{i} \mid \hat{\Theta}\right) \\
@@ -232,7 +232,7 @@ Define a stopping rule to terminate the algorithm.</p>
 <p>The general, diagonal, and spherical families implemented for the GMM, are also implemented for the continuous part, of the mix feature model.</p>
 <p><strong>Note:</strong> For model selection, there is the Bayesian information criterion (BIC) implemented in mixVarClust.</p>
 
-<h2 id="ref">References</h2>
+<h1 id="ref">References</h1>
 <div id="refs" class="references">
 <div id="ref-rmixmod">
 <p>Biernacki, Christophe, Gilles Celeux, Gérard Govaert, and Florent Langrognet. 2008. “MIXMOD : a software for model-based classification with continuous and categorical data.” <a href="https://hal.archives-ouvertes.fr/hal-00469522" class="uri">https://hal.archives-ouvertes.fr/hal-00469522</a>.</p>

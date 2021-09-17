@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Data science and Econometrics</title>
+    <title>Posts on bouba&#39;s blog</title>
     <link>/post/</link>
-    <description>Recent content in Posts on Data science and Econometrics</description>
+    <description>Recent content in Posts on bouba&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 15 Sep 2021 00:00:00 +0000</lastBuildDate><atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
@@ -14,6 +14,15 @@
       
       <guid>/2021/09/15/principal-components-analysis-using-python-and-c-library/</guid>
       <description>I have written from scratch a C++ linear algebra library. This library can perform basic matrix arithmetic operations, compute some statistics, matrix transformations, and algorithms such as, householder reflections, the QR algorithm, the Singular Value Decompostion, etc (also implemented from scratch). The library perform the Principal Components Analysis of a matrix using the implemented SVD.</description>
+    </item>
+    
+    <item>
+      <title>Writting a C&#43;&#43; linear algebra library from scratch.</title>
+      <link>/2021/09/15/writting-a-c-linear-algebra-library-from-scratch./</link>
+      <pubDate>Wed, 15 Sep 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/2021/09/15/writting-a-c-linear-algebra-library-from-scratch./</guid>
+      <description>Documentation of the implementation of the library. Explanation of the math implemented and the source code.</description>
     </item>
     
     <item>
