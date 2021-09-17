@@ -378,8 +378,8 @@ img {
   padding-top: 250px;
 }
 
-.sidebar .logo-title .description {
-  font-size: 15px;
+.sidebar .description {
+  font-size: 13px;
 }
 
 .sidebar .logo-title .logo {
@@ -391,6 +391,8 @@ img {
   border-radius: 70%;
 }
 
+
+/* 
 .sidebar .logo-title .title h6 {
   text-transform: uppercase;
   font-size: 2rem;
@@ -405,7 +407,16 @@ img {
   color: var(--heading-color);
   font-size: 2rem;
   font-weight: bold;
+} */
+
+.sidebar .title { 
+  text-decoration: none;
+  text-transform: uppercase;
+   color: var(--heading-color);
+  font-size: 15px;
+  font-weight: bold;
 }
+
 
 .sidebar .social-links {
   list-style: none;
