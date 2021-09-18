@@ -17,11 +17,11 @@
     </item>
     
     <item>
-      <title>Writting a C&#43;&#43; linear algebra library from scratch.</title>
-      <link>/2021/09/15/writting-a-c-linear-algebra-library-from-scratch./</link>
+      <title>Writing a C&#43;&#43; linear algebra library from scratch.</title>
+      <link>/2021/09/15/writing-a-c-linear-algebra-library-from-scratch./</link>
       <pubDate>Wed, 15 Sep 2021 00:00:00 +0000</pubDate>
       
-      <guid>/2021/09/15/writting-a-c-linear-algebra-library-from-scratch./</guid>
+      <guid>/2021/09/15/writing-a-c-linear-algebra-library-from-scratch./</guid>
       <description>Documentation of the implementation of the library. Explanation of the math implemented and the source code.</description>
     </item>
     
