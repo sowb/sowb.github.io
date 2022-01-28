@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>clustering on bouba&#39;s notes</title>
+    <link>/tags/clustering/</link>
+    <description>Recent content in clustering on bouba&#39;s notes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 01 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="/tags/clustering/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Tutorial: How to use my R Package mixVarClust</title>
+      <link>/2020/12/01/tutorial-how-to-use-my-r-package-mixvarclust/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/12/01/tutorial-how-to-use-my-r-package-mixvarclust/</guid>
+      <description>mixVarClust is a Model-Based Clustering package. There are 3 mixture models implemented in the package. The Gaussian mixture model, used for clustering univariate or multivariate continuous variables. The multinomial mixture model, used for clustering categorical variables. The Gaussian-multinomial mixture model, used to group mix features (Gaussian and multinomial).</description>
+    </item>
+    
+  </channel>
+</rss>

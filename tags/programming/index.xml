@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>programming on bouba&#39;s notes</title>
+    <link>/tags/programming/</link>
+    <description>Recent content in programming on bouba&#39;s notes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 15 Sep 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/programming/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Principal Components Analysis using Python and C&#43;&#43; library</title>
+      <link>/2021/09/15/principal-components-analysis-using-python-and-c-library/</link>
+      <pubDate>Wed, 15 Sep 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/2021/09/15/principal-components-analysis-using-python-and-c-library/</guid>
+      <description>I have written from scratch a C++ linear algebra library. This library can perform basic matrix arithmetic operations, compute some statistics, matrix transformations, and algorithms such as, householder reflections, the QR algorithm, the Singular Value Decompostion, etc (also implemented from scratch). The library perform the Principal Components Analysis of a matrix using the implemented SVD.</description>
+    </item>
+    
+    <item>
+      <title>Writing a C&#43;&#43; linear algebra library from scratch.</title>
+      <link>/2021/09/15/writing-a-c-linear-algebra-library-from-scratch./</link>
+      <pubDate>Wed, 15 Sep 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/2021/09/15/writing-a-c-linear-algebra-library-from-scratch./</guid>
+      <description>Documentation of the implementation of the library. Explanation of the math implemented and the source code.</description>
+    </item>
+    
+    <item>
+      <title>Tutorial: How to use my R Package mixVarClust</title>
+      <link>/2020/12/01/tutorial-how-to-use-my-r-package-mixvarclust/</link>
+      <pubDate>Tue, 01 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/12/01/tutorial-how-to-use-my-r-package-mixvarclust/</guid>
+      <description>mixVarClust is a Model-Based Clustering package. There are 3 mixture models implemented in the package. The Gaussian mixture model, used for clustering univariate or multivariate continuous variables. The multinomial mixture model, used for clustering categorical variables. The Gaussian-multinomial mixture model, used to group mix features (Gaussian and multinomial).</description>
+    </item>
+    
+  </channel>
+</rss>

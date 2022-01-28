@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>python on bouba&#39;s notes</title>
+    <link>/tags/python/</link>
+    <description>Recent content in python on bouba&#39;s notes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 07 Jun 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Explicabilité/interprétabilité en apprentissage statistique.</title>
+      <link>/2021/06/07/explicabilit%C3%A9/interpr%C3%A9tabilit%C3%A9-en-apprentissage-statistique./</link>
+      <pubDate>Mon, 07 Jun 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/2021/06/07/explicabilit%C3%A9/interpr%C3%A9tabilit%C3%A9-en-apprentissage-statistique./</guid>
+      <description>Utilisation des modèles LIME et SHAP pour interpréter un modèle de regression logistique et un Random Forest appliqués sur le jeu de données : Pima Indians Diabetes Database.</description>
+    </item>
+    
+  </channel>
+</rss>

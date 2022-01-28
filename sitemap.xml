@@ -8,6 +8,16 @@
   </url>
   
   <url>
+    <loc>/tags/c&#43;&#43;/</loc>
+    <lastmod>2021-09-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/linear-algebra/</loc>
+    <lastmod>2021-09-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/</loc>
     <lastmod>2021-09-15T00:00:00+00:00</lastmod>
   </url>
@@ -18,13 +28,48 @@
   </url>
   
   <url>
+    <loc>/tags/programming/</loc>
+    <lastmod>2021-09-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2021-09-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/2021/09/15/writing-a-c-linear-algebra-library-from-scratch./</loc>
     <lastmod>2021-09-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
+    <loc>/tags/ai/</loc>
+    <lastmod>2021-06-07T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/2021/06/07/explicabilit%C3%A9/interpr%C3%A9tabilit%C3%A9-en-apprentissage-statistique./</loc>
     <lastmod>2021-06-07T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/machine-learning/</loc>
+    <lastmod>2021-06-07T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/python/</loc>
+    <lastmod>2021-06-07T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/clustering/</loc>
+    <lastmod>2020-12-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/r/</loc>
+    <lastmod>2020-12-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -53,10 +98,6 @@
   
   <url>
     <loc>/categories/</loc>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
   </url>
   
 </urlset>
